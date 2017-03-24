@@ -1,12 +1,12 @@
 # Minesweeper
 
-# Project Description
+# Description
     - terminal version of Minesweeper in Python
 
 # Key
     '#' = tile (not turned over)
     ' ' = empty tile
-    '1' = tile that touches 1 mine, '2' = tile that touches 2 mines, '3' = tile that touches 3 mines, ...
+    '1-8' = the number of mines that the tile touches
     '*' = mine
 
 # Classes
