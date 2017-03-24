@@ -204,11 +204,11 @@ class GameBoard:
             input_row -= 1
 
             # guarantee that the user guesses an empty space on the first guess
-            if (firstTurn == True and not self.game_board[input_row][input_col].isEmpty()):
+            while (firstTurn == True and not self.game_board[input_row][input_col].isEmpty()):
                 # loop through the 8 adjacent tiles
                 for r in range(input_row - 1, input_row + 2):
                     for c in range(input_col - 1, input_col + 2):
-                        if (self.game_board[r][c].isMine()):
+                        while (self.game_board[r][c].isMine()):
                             # move mine
                             self.game_board[r][c].value = ' ' 
                             # replace mine
