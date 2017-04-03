@@ -1,11 +1,11 @@
 class Tile:
 
     # Tile constructor 
-    def __init__(self, row, col, value=' ', isFlipped=False):
+    def __init__(self, row, col):
         self.row = row
         self.col = col
-        self.value = value
-        self.isFlipped = isFlipped 
+        self.value = ' '
+        self.isFlipped = False 
 
     def flip(self):
         """
