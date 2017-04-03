@@ -8,11 +8,11 @@ game_board = gameboard.GameBoard(num_rows, num_cols, num_mines) # create a 9 x 9
 
 def displayBoard(board):
     """
-    - print the properly formatted game board to the console
+    - display the game board
     """
-    for row in range(9):
+    for row in range(num_rows):
         print('|', end='')
-        for col in range(9):
+        for col in range(num_cols):
             if (board[row][col].isFlipped):
                 print(board[row][col].display(), end='|')
             else:
@@ -65,17 +65,8 @@ def gameLoop():
         input_row -= 1
 
         # guarantee that the user guesses an empty space on the first guess
-        while (firstTurn == True and not game_board.board[input_row][input_col].isEmpty()):
-            # loop through the 8 adjacent tiles
-            for r in range(input_row - 1, input_row + 2):
-                for c in range(input_col - 1, input_col + 2):
-                    while (game_board.board[r][c].isMine()):
-                        # move mine
-                        game_board.board[r][c].value = ' ' 
-                        # replace mine
-                        game_board.placeMine()    
-
-            game_board.fillBoard()
+        if (firstTurn == True):
+            game_board.guaranteeEmptyCell(input_row, input_col)
 
         # flip the tile the user guessed
         game_board.board[input_row][input_col].flip()
@@ -97,7 +88,7 @@ def gameLoop():
         firstTurn = False
                 
 def main():
-    
+
     gameLoop()
 
 main()

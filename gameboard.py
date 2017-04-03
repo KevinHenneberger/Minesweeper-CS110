@@ -95,6 +95,22 @@ class GameBoard:
                 if (self.board[row][col].isMine()):
                     self.board[row][col].flip()
 
+    def guaranteeEmptyCell(self, row, col):
+        """
+        - guarantee that the user guesses an empty space on the first guess
+        """
+        while (not self.board[row][col].isEmpty()):
+            # loop through the 8 adjacent tiles
+            for r in range(row - 1, row + 2):
+                for c in range(col - 1, col + 2):
+                    while (self.board[r][c].isMine()):
+                        # move mine
+                        self.board[r][c].value = ' ' 
+                        # replace mine
+                        self.placeMine()    
+
+            self.fillBoard()
+
     def hasLost(self, row, col):
         """
         - if the user guesses a mine, return True
