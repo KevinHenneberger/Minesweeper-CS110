@@ -5,7 +5,7 @@ class Tile:
         self.row = row
         self.col = col
         self.value = ' '
-        self.isFlipped = False 
+        self.isFlipped = False
 
     def flip(self):
         """
@@ -24,9 +24,3 @@ class Tile:
         - return if the tile is empty or not
         """
         return self.value == ' '
-
-    def display(self):
-        """
-        - return the tile value
-        """
-        return self.value

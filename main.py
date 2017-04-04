@@ -1,91 +1,155 @@
+import pygame
 import gameboard
 
-num_rows = 9
-num_cols = 9
-num_mines = 10
+pygame.init()
 
-game_board = gameboard.GameBoard(num_rows, num_cols, num_mines) # create a 9 x 9 game board with 10 mines
+# global variables
+num_rows = 18
+num_cols = 18
+num_mines = 10
+screen_width = 400
+screen_height = 400
+tileW = screen_width // num_cols
+tileH = screen_height // num_rows
+
+# create a 9 x 9 game board with 10 mines
+game_board = gameboard.GameBoard(num_rows, num_cols, num_mines)
+# setup the game board
+game_board.createBoard()
+game_board.placeMines()
+game_board.fillBoard()
+
+# initialize pygame
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption('Minesweeper')
+screen.fill((200, 200, 200))
 
 def displayBoard(board):
     """
-    - display the game board
+    - GUI display of the back-end game board array from the GameBoard class
     """
     for row in range(num_rows):
-        print('|', end='')
         for col in range(num_cols):
-            if (board[row][col].isFlipped):
-                print(board[row][col].display(), end='|')
-            else:
-                print('#', end='|')
-        print('')
-
-def lostGame():
-    """
-    - lost game function
-    """
-    game_board.revealMines()
-    displayBoard(game_board.board)
-    print("GAME OVER!")
-
-def wonGame():
-    """
-    - won game function
-    """
-    displayBoard(game_board.board)
-    print('YOU WON!')
+            tileX = col * tileW
+            tileY = row * tileH
+            
+            if (not board[row][col].isFlipped):
+                pygame.draw.rect(screen, (0, 100, 255), [tileX, tileY, tileW, tileH])
+                pygame.draw.rect(screen, (0, 75, 225), [tileX + (tileW // 18), tileY + (tileH // 18), tileW - (tileW // 9), tileH - (tileH // 9)])
+            else: 
+                pygame.draw.rect(screen, (200, 200, 200), [tileX, tileY, tileW, tileH])
+                font = pygame.font.SysFont("monospace", 25)
+                txt = font.render(board[row][col].value, True, (255, 255, 255))
+                screen.blit(txt, [tileX - (txt.get_rect().width // 2) + (tileW // 2), tileY - (txt.get_rect().height // 2) + (tileH // 2)])
 
 def gameLoop():
     """
-    - run a continuous game loop that prompts the user to guess tiles until the game ends (user wins or loses)
+    - game loop and menu system
     """
-    # setup the game board
-    game_board.createBoard()
-    game_board.placeMines()
-    game_board.fillBoard()
+    openWindow = True   
+    playGameScreen = True
+    loseScreen = False
+    winScreen = False
 
     firstTurn = True
-    isGameOver = False
 
-    # run continuous game loop
-    while (not isGameOver):
-     
-        displayBoard(game_board.board)
-        
-        # prompt the user to guess a tile
-        input_col = int(input('Enter a Column: '))
-        input_row = int(input('Enter a Row: '))
+    # open window loop
+    while (openWindow):
+        # event handling
+        for event in pygame.event.get():
+            # allow the user to exit the window
+            if (event.type == pygame.QUIT):
+                openWindow = False
 
-        # validate the input
-        while (not (1 <= input_col <= num_cols and 1 <= input_row <= num_rows)):
-            print('ERROR! INVALID INPUT!')
-            input_col = int(input('Enter a Column: '))
-            input_row = int(input('Enter a Row: '))
-            
-        input_col -= 1
-        input_row -= 1
+        # play game loop
+        while (playGameScreen):
 
-        # guarantee that the user guesses an empty space on the first guess
-        if (firstTurn == True):
-            game_board.guaranteeEmptyCell(input_row, input_col)
+            # update pygame frame
+            pygame.display.update()
 
-        # flip the tile the user guessed
-        game_board.board[input_row][input_col].flip()
+            # GUI display of board
+            displayBoard(game_board.board)
 
-        # if the user guesses an empty tile...
-        if (game_board.board[input_row][input_col].isEmpty()):
-            game_board.clearEmptyCells(input_row, input_col)
-        
-        # if the users loses...
-        if (game_board.hasLost(input_row, input_col)):
-            lostGame()
-            isGameOver = True
+            # event handling
+            for event in pygame.event.get():
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    playGameScreen = False
+                    openWindow = False
 
-        # if the user wins...
-        if (game_board.hasWon()):
-            wonGame()
-            isGameOver = True
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
 
-        firstTurn = False
+                    # convert mouseX and mouseY into row and column
+                    input_col = int(mouseX // tileW)
+                    input_row = int(mouseY // tileH)
+
+                    # guarantee that the user guesses an empty space on the first guess
+                    if (firstTurn):
+                        game_board.guaranteeEmptyCell(input_row, input_col)
+
+                    # flip the tile the user guessed
+                    game_board.board[input_row][input_col].flip()
+
+                    # if the user guesses an empty tile...
+                    if (game_board.board[input_row][input_col].isEmpty()):
+                        game_board.clearEmptyCells(input_row, input_col)
+                    
+                    # if the users loses...
+                    if (game_board.hasLost(input_row, input_col)):
+                        playGameScreen = False
+                        loseScreen = True
+
+                    # if the user wins...
+                    if (game_board.hasWon()):
+                        playGameScreen = False
+                        winScreen = True
+
+                    firstTurn = False
+
+        # lose screen loop
+        while (loseScreen):
+
+            # update pygame frame
+            pygame.display.update()
+
+            # GUI display of board
+            game_board.revealMines()
+            displayBoard(game_board.board)
+            font = pygame.font.SysFont("monospace", 48)
+            txt = font.render("GAME OVER!", True, (255, 0, 0))
+            screen.blit(txt, [screen_width / 2 - (txt.get_rect().width // 2), screen_height / 4 - (txt.get_rect().height // 2)])    
+
+            for event in pygame.event.get():
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+                    loseScreen = False
+
+        # win screen loop
+        while (winScreen):
+            # update pygame frame
+            pygame.display.update()
+
+            # GUI display of board
+            game_board.revealMines()
+            displayBoard(game_board.board)
+            font = pygame.font.SysFont("monospace", 48)
+            txt = font.render("YOU WIN!", True, (0, 255, 0))
+            screen.blit(txt, [screen_width / 2 - (txt.get_rect().width // 2), screen_height / 4 - (txt.get_rect().height // 2)])
+
+            for event in pygame.event.get():
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+                    winScreen = False
+
+    pygame.quit()
+    quit()
                 
 def main():
 
