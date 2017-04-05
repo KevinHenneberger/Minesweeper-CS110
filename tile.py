@@ -6,12 +6,19 @@ class Tile:
         self.col = col
         self.value = ' '
         self.isFlipped = False
+        self.isFlagged = False
 
     def flip(self):
         """
         - set isFlipped to True
         """
         self.isFlipped = True
+
+    def flag(self):
+        """
+        - set isFlagged to True
+        """
+        self.isFlagged = True
 
     def isMine(self):
         """

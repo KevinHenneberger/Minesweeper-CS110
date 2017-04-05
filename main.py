@@ -34,8 +34,12 @@ def displayBoard(board):
             tileY = row * tileH
             
             if (not board[row][col].isFlipped):
-                pygame.draw.rect(screen, (0, 100, 255), [tileX, tileY, tileW, tileH])
-                pygame.draw.rect(screen, (0, 75, 225), [tileX + (tileW // 18), tileY + (tileH // 18), tileW - (tileW // 9), tileH - (tileH // 9)])
+                if (not board[row][col].isFlagged):
+                    pygame.draw.rect(screen, (0, 100, 255), [tileX, tileY, tileW, tileH])
+                    pygame.draw.rect(screen, (0, 75, 225), [tileX + (tileW // 18), tileY + (tileH // 18), tileW - (tileW // 9), tileH - (tileH // 9)])
+                else:
+                    pygame.draw.rect(screen, (255, 100, 0), [tileX, tileY, tileW, tileH])
+                    pygame.draw.rect(screen, (255, 75, 0), [tileX + (tileW // 18), tileY + (tileH // 18), tileW - (tileW // 9), tileH - (tileH // 9)])
             else: 
                 pygame.draw.rect(screen, (200, 200, 200), [tileX, tileY, tileW, tileH])
                 font = pygame.font.SysFont("monospace", 25)
@@ -92,24 +96,31 @@ def gameLoop():
                     if (firstTurn):
                         game_board.guaranteeEmptyCell(input_row, input_col)
 
-                    # flip the tile the user guessed
-                    game_board.board[input_row][input_col].flip()
+                    # if the user left clicks
+                    if (event.button == 1):
+                        # flip the tile the user guessed
+                        game_board.board[input_row][input_col].flip()
 
-                    # if the user guesses an empty tile...
-                    if (game_board.board[input_row][input_col].isEmpty()):
-                        game_board.clearEmptyCells(input_row, input_col)
-                    
-                    # if the users loses...
-                    if (game_board.hasLost(input_row, input_col)):
-                        playGameScreen = False
-                        loseScreen = True
+                        # if the user guesses an empty tile...
+                        if (game_board.board[input_row][input_col].isEmpty()):
+                            game_board.clearEmptyCells(input_row, input_col)
 
-                    # if the user wins...
-                    if (game_board.hasWon()):
-                        playGameScreen = False
-                        winScreen = True
+                        # if the users loses...
+                        if (game_board.hasLost(input_row, input_col)):
+                            playGameScreen = False
+                            loseScreen = True
 
-                    firstTurn = False
+                        # if the user wins...
+                        if (game_board.hasWon()):
+                            playGameScreen = False
+                            winScreen = True
+
+                        firstTurn = False
+
+                    # if the user right clicks
+                    elif (event.button == 3 and firstTurn == False):
+                        # mark the tile the user guessed as a flag
+                        game_board.board[input_row][input_col].flag()
 
         # lose screen loop
         while (loseScreen):
