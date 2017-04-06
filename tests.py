@@ -1,37 +1,45 @@
 import tile
 import gameboard
 
-print("######## Testing Tile Model #########")
-test_tile = tile.Tile(1, 1);
+print("=" * 50)
+print("### Testing Tile Model ###")
+print("=" * 50)
 
-# print True
-test_tile.value = '*'
-print(test_tile.isMine())
+tile_test = tile.Tile(1, 1);
+value = ['*', ' ', '1']
 
-# print False
-test_tile.value = '1'
-print(test_tile.isMine())
+for v in value:
 
-# print True
-test_tile.value = ' '
-print(test_tile.isEmpty())
+    tile_test.value = v
 
-# print False
-test_tile.value = '1'
-print(test_tile.isEmpty())
+    print("Test .isMine() and .isEmpty() for " + v)
+    print(tile_test.isMine())
+    print(tile_test.isEmpty())
+    
+print("Flip Test #1 (should equal False)")
+print(tile_test.isFlipped)
 
-# print False
-print(test_tile.isFlipped)
-test_tile.flip()
-# print True
-print(test_tile.isFlipped)
+print("Flip Test #2 (should equal True)")
+tile_test.flip()
+print(tile_test.isFlipped)
 
-print("######## Testing GameBoard Model #########")
+print("Flag Test #1 (should equal False)")
+print(tile_test.isFlagged)
 
-tests = [(9, 9, 9), (1, 1, 1), (15, 15, 9), (9, 9, 0)]
+print("Flag Test #2 (should equal True)")
+tile_test.flag()
+print(tile_test.isFlagged)
 
-for test in tests:
-    test_gameboard1 = gameboard.GameBoard(test[0], test[1], test[2])
-    test_gameboard1.createBoard()
-    test_gameboard1.placeMines()
-    test_gameboard1.fillBoard()
+print("=" * 50)
+print("### Testing GameBoard Model ###")
+print("=" * 50)
+
+tests = [(5,5,3), (4,4,4), (9,9,9), (7,7,15)]
+
+for t in tests:
+    print("Attempt to create a board with {} rows, {} columns, and {} mines.".format(t[0], t[1], t[2]))
+    testboard1 = gameboard.GameBoard(t[0], t[1], t[2])
+    testboard1.createBoard()
+    testboard1.placeMines()
+    testboard1.fillBoard()
+    print("Successfully created board!")
