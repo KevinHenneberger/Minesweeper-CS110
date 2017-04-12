@@ -1,86 +1,269 @@
 import pygame
 import gameboard
+import button
 
 pygame.init()
 
 # global variables
-num_rows = 18
-num_cols = 18
+num_rows = 10
+num_cols = 10
 num_mines = 10
-screen_width = 400
-screen_height = 400
-tileW = screen_width // num_cols
-tileH = screen_height // num_rows
+
+window_width = 400
+window_height = 400
+
+game_board_x = 
+game_board_y = 
+game_board_width = 
+game_board_height = 
+
+
+white = (255, 255, 255)
+gray = (200, 200, 200)
+
+tile_width = window_width / num_cols
+tile_height = window_height / num_rows
 
 # create a 9 x 9 game board with 10 mines
 game_board = gameboard.GameBoard(num_rows, num_cols, num_mines)
-# setup the game board
-game_board.createBoard()
-game_board.placeMines()
-game_board.fillBoard()
+
+# buttons
+buttons = {}
+buttons["start"] = button.Button(100, "Start")
+buttons["help"] = button.Button(175, "Help")
+buttons["settings"] = button.Button(250, "Settings")
+buttons["high_scores"] = button.Button(325, "High Scores")
+buttons["help_back"] = button.Button(400, "Back")
+buttons["settings_back"] = button.Button(400, "Back")
+buttons["high_scores_back"] = button.Button(400, "Back")
 
 # initialize pygame
-screen = pygame.display.set_mode((screen_width, screen_height))
+window = pygame.display.set_mode((window_width, window_height + 100))
 pygame.display.set_caption('Minesweeper')
-screen.fill((200, 200, 200))
+window.fill(gray)
+
+def text(txt, x, y, font, size, color, align):
+    f = pygame.font.SysFont(font, size)
+    t = f.render(txt, True, color)
+
+    if (align == "left"):
+        window.blit(t, [x, y])
+    elif (align == "center"):
+        window.blit(t, [x - (t.get_rect().width / 2), y - (t.get_rect().height / 2)])
+
+def displayButton(button):
+    """
+    - GUI display of button from the Button class
+    """     
+    pygame.draw.rect(window, button.bgColor, [button.x, button.y, button.w, button.h])
+    pygame.draw.rect(window, button.fgColor, [button.x + 5, button.y + 5, button.w - 10, button.h - 10])
+    text(button.text, button.x + button.w / 2, button.y + button.h / 2, "Impact", 24, button.textColor, "center")
 
 def displayBoard(board):
     """
     - GUI display of the back-end game board array from the GameBoard class
     """
+    w = tile_width
+    h = tile_height
+
     for row in range(num_rows):
         for col in range(num_cols):
-            tileX = col * tileW
-            tileY = row * tileH
+            x = col * w
+            y = row * h + 50
             
             if (not board[row][col].isFlipped):
                 if (not board[row][col].isFlagged):
-                    pygame.draw.rect(screen, (0, 100, 255), [tileX, tileY, tileW, tileH])
-                    pygame.draw.rect(screen, (0, 75, 225), [tileX + (tileW // 18), tileY + (tileH // 18), tileW - (tileW // 9), tileH - (tileH // 9)])
+                    pygame.draw.rect(window, (0, 0, 215), [x, y, w, h])
+                    pygame.draw.rect(window, (0, 0, 255), [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
+                    pygame.draw.rect(window, (0, 0, 235), [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
                 else:
-                    pygame.draw.rect(screen, (255, 100, 0), [tileX, tileY, tileW, tileH])
-                    pygame.draw.rect(screen, (255, 75, 0), [tileX + (tileW // 18), tileY + (tileH // 18), tileW - (tileW // 9), tileH - (tileH // 9)])
+                    pygame.draw.rect(window, (215, 0, 0), [x, y, w, h])
+                    pygame.draw.rect(window, (255, 0, 0), [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
+                    pygame.draw.rect(window, (235, 0, 0), [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
             else: 
-                pygame.draw.rect(screen, (200, 200, 200), [tileX, tileY, tileW, tileH])
-                font = pygame.font.SysFont("monospace", 25)
-                txt = font.render(board[row][col].value, True, (255, 255, 255))
-                screen.blit(txt, [tileX - (txt.get_rect().width // 2) + (tileW // 2), tileY - (txt.get_rect().height // 2) + (tileH // 2)])
+                pygame.draw.rect(window, gray, [x, y, w, h])
+                if (board[row][col].isMine()): 
+                    text(board[row][col].value, x + (w / 2), y + h, "Impact", 75, board[row][col].textColor(), "center")
+                else:
+                    text(board[row][col].value, x + (w / 2), y + (h / 2), "Impact", 35, board[row][col].textColor(), "center")   
 
 def gameLoop():
     """
     - game loop and menu system
     """
-    openWindow = True   
-    playGameScreen = True
-    loseScreen = False
-    winScreen = False
+    openWindow = True
+    screen = "main_menu_screen"
+
+    # setup the game board
+    game_board.createBoard()
+    game_board.placeMines()
+    game_board.fillBoard()
 
     firstTurn = True
 
-    # open window loop
     while (openWindow):
-        # event handling
-        for event in pygame.event.get():
-            # allow the user to exit the window
-            if (event.type == pygame.QUIT):
-                openWindow = False
 
-        # play game loop
-        while (playGameScreen):
+        # main menu screen
+        if (screen == "main_menu_screen"):
 
             # update pygame frame
             pygame.display.update()
+
+            # GUI display
+            window.fill(gray)
+            text("Minesweeper", window_width / 2, 50, "Impact", 48, white, "center")  
+            displayButton(buttons["start"])
+            displayButton(buttons["help"])
+            displayButton(buttons["settings"])
+            displayButton(buttons["high_scores"])
+            text("Created by Kevin Henneberger, Adam Wiener,", window_width / 2, 425, "Impact", 16, white, "center")  
+            text("Matt Aber, and Baptiste Saliba", window_width / 2, 450, "Impact", 16, white, "center") 
+            # event handling
+            for event in pygame.event.get():
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
+
+                    # change screen
+                    if (buttons["start"].mouseOver(mouseX, mouseY)):
+                        screen = "play_game_screen"
+                    elif (buttons["help"].mouseOver(mouseX, mouseY)):
+                        screen = "help_screen"
+                    elif (buttons["settings"].mouseOver(mouseX, mouseY)):
+                        screen = "settings_screen"
+                    elif (buttons["high_scores"].mouseOver(mouseX, mouseY)):
+                        screen = "high_scores_screen"
+
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+
+        # help screen
+        elif (screen == "help_screen"):
+
+            # update pygame frame
+            pygame.display.update()
+
+            # GUI display
+            window.fill(gray)
+            text("Help", window_width / 2, 50, "Impact", 48, white, "center")
+
+            instructions = [
+                "Insert step 1 here...", 
+                "Insert step 2 here...", 
+                "Insert step 3 here...", 
+                "Insert step 4 here...", 
+                "Insert step 5 here..."
+            ]
+
+            for i in range(len(instructions)):
+                text(str(i + 1) + ") " + instructions[i], 35, i * 35 + 100, "Impact", 18, white, "left") 
+
+            displayButton(buttons["help_back"])
+
+            # event handling
+            for event in pygame.event.get():
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
+
+                    # change screen
+                    if (buttons["help_back"].mouseOver(mouseX, mouseY)):
+                        screen = "main_menu_screen"
+
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+
+        # settings screen
+        elif (screen == "settings_screen"):
+
+            # update pygame frame
+            pygame.display.update()
+
+            # GUI display
+            window.fill(gray)
+            text("Settings", window_width / 2, 50, "Impact", 48, white, "center")  
+            displayButton(buttons["settings_back"])
+
+            # event handling
+            for event in pygame.event.get():
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
+
+                    # change screen
+                    if (buttons["settings_back"].mouseOver(mouseX, mouseY)):
+                        screen = "main_menu_screen"
+
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+
+        # high scores screen
+        elif (screen == "high_scores_screen"):
+
+            # update pygame frame
+            pygame.display.update()
+
+            # GUI display
+            window.fill(gray)
+            text("High Scores", window_width / 2, 50, "Impact", 48, white, "center")  
+            displayButton(buttons["high_scores_back"])
+
+            high_scores_list = [
+                "Name 1 " + ". " * 40 + "100", 
+                "Name 2 " + ". " * 40 + "200",
+                "Name 3 " + ". " * 40 + "300", 
+                "Name 4 " + ". " * 40 + "400",
+                "Name 5 " + ". " * 40 + "500"
+            ]
+
+            for i in range(len(high_scores_list)):
+                text(str(i + 1) + ") " + high_scores_list[i], 35, i * 35 + 100, "Impact", 18, white, "left") 
+
+            displayButton(buttons["help_back"])
+
+            # event handling
+            for event in pygame.event.get():
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
+
+                    # change screen
+                    if (buttons["high_scores_back"].mouseOver(mouseX, mouseY)):
+                        screen = "main_menu_screen"
+
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+
+        # play game screen
+        elif (screen == "play_game_screen"):
+
+            # update pygame frame
+            pygame.display.update()
+
+            window.fill((175, 175, 175))
 
             # GUI display of board
             displayBoard(game_board.board)
 
             # event handling
             for event in pygame.event.get():
-                # allow the user to exit the window
-                if (event.type == pygame.QUIT):
-                    playGameScreen = False
-                    openWindow = False
-
                 # check if the user clicked the mouse
                 if (event.type == pygame.MOUSEBUTTONDOWN):
                     # get mouse x and y coordinates
@@ -89,8 +272,8 @@ def gameLoop():
                     mouseY = mousePosition[1]
 
                     # convert mouseX and mouseY into row and column
-                    input_col = int(mouseX // tileW)
-                    input_row = int(mouseY // tileH)
+                    input_col = int(mouseX // tile_width)
+                    input_row = int((mouseY - 50) // tile_height)
 
                     # guarantee that the user guesses an empty space on the first guess
                     if (firstTurn):
@@ -107,13 +290,11 @@ def gameLoop():
 
                         # if the users loses...
                         if (game_board.hasLost(input_row, input_col)):
-                            playGameScreen = False
-                            loseScreen = True
+                            screen = "lose_screen"
 
                         # if the user wins...
                         if (game_board.hasWon()):
-                            playGameScreen = False
-                            winScreen = True
+                            screen = "win_screen"
 
                         firstTurn = False
 
@@ -122,46 +303,47 @@ def gameLoop():
                         # mark the tile the user guessed as a flag
                         game_board.board[input_row][input_col].flag()
 
-        # lose screen loop
-        while (loseScreen):
+                # allow the user to exit the window
+                if (event.type == pygame.QUIT):
+                    openWindow = False
+
+        # lose screen
+        elif (screen == "lose_screen"):
 
             # update pygame frame
             pygame.display.update()
 
-            # GUI display of board
+            # GUI display
             game_board.revealMines()
             displayBoard(game_board.board)
-            font = pygame.font.SysFont("monospace", 48)
-            txt = font.render("GAME OVER!", True, (255, 0, 0))
-            screen.blit(txt, [screen_width / 2 - (txt.get_rect().width // 2), screen_height / 4 - (txt.get_rect().height // 2)])    
+            text("GAME OVER!", window_width / 2, 200, "Impact", 48, (255, 0, 0), "center")  
 
+            # event handling
             for event in pygame.event.get():
                 # allow the user to exit the window
                 if (event.type == pygame.QUIT):
                     openWindow = False
-                    loseScreen = False
 
-        # win screen loop
-        while (winScreen):
+        # win screen
+        elif (screen == "win_screen"):
+
             # update pygame frame
             pygame.display.update()
 
-            # GUI display of board
-            game_board.revealMines()
+            # GUI display
             displayBoard(game_board.board)
-            font = pygame.font.SysFont("monospace", 48)
-            txt = font.render("YOU WIN!", True, (0, 255, 0))
-            screen.blit(txt, [screen_width / 2 - (txt.get_rect().width // 2), screen_height / 4 - (txt.get_rect().height // 2)])
+            font = pygame.font.SysFont("Impact", 48)
+            text("YOU WIN!", window_width / 2, 200, "Impact", 48, (0, 255, 0), "center")  
 
+            # event handling
             for event in pygame.event.get():
                 # allow the user to exit the window
                 if (event.type == pygame.QUIT):
                     openWindow = False
-                    winScreen = False
 
     pygame.quit()
     quit()
-                
+
 def main():
 
     gameLoop()

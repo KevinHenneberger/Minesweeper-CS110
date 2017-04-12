@@ -31,3 +31,28 @@ class Tile:
         - return if the tile is empty or not
         """
         return self.value == ' '
+
+    def textColor(self):
+        """
+        - return the right color for each type of tile
+        """
+        if (self.value == ' '):
+            return (200, 200, 200)
+        elif (self.value == '1'):
+            return (0, 150, 0)
+        elif (self.value == '2'):
+            return (0, 100, 255)
+        elif (self.value == '3'):
+            return (255, 0, 0)
+        elif (self.value == '4'):
+            return (255, 255, 0)
+        elif (self.value == '5'):
+            return (0, 255, 255)
+        elif (self.value == '6'):
+            return (255, 0, 255)
+        elif (self.value == '7'):
+            return (0, 75, 0)
+        elif (self.value == '8'):
+            return (100, 0, 0)
+        elif (self.value == '*'):
+            return (255, 0, 0)

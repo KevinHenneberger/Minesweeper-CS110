@@ -1,1 +1,1 @@
-# Minesweeper with Pygame
+# Minesweeper
