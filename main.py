@@ -5,24 +5,34 @@ import button
 pygame.init()
 
 # global variables
-num_rows = 10
-num_cols = 10
-num_mines = 10
+white = (255, 255, 255)
+black = (0, 0, 0)
+gray1 = (200, 200, 200)
+gray2 = (175, 175, 175)
+blue1 = (0, 0, 215)
+blue2 = (0, 0, 255)
+blue3 = (0, 0, 235)
+red1 = (215, 0, 0)
+red2 = (255, 0, 0)
+red3 = (235, 0, 0)
+green1 = (0, 135, 0)
+green2 = (0, 175, 0)
+green3 = (0, 155, 0)
 
 window_width = 400
-window_height = 400
+window_height = 500
 
-game_board_x = 
-game_board_y = 
-game_board_width = 
-game_board_height = 
+num_rows = 9
+num_cols = 9
+num_mines = 10
 
+game_board_x = 25
+game_board_y = 125
+game_board_width = 350
+game_board_height = 350
 
-white = (255, 255, 255)
-gray = (200, 200, 200)
-
-tile_width = window_width / num_cols
-tile_height = window_height / num_rows
+tile_width = game_board_width // num_cols
+tile_height = game_board_height // num_rows
 
 # create a 9 x 9 game board with 10 mines
 game_board = gameboard.GameBoard(num_rows, num_cols, num_mines)
@@ -38,11 +48,14 @@ buttons["settings_back"] = button.Button(400, "Back")
 buttons["high_scores_back"] = button.Button(400, "Back")
 
 # initialize pygame
-window = pygame.display.set_mode((window_width, window_height + 100))
+window = pygame.display.set_mode((window_width, window_height))
 pygame.display.set_caption('Minesweeper')
-window.fill(gray)
+window.fill(gray1)
 
 def text(txt, x, y, font, size, color, align):
+    """
+    - GUI display of text
+    """
     f = pygame.font.SysFont(font, size)
     t = f.render(txt, True, color)
 
@@ -61,38 +74,42 @@ def displayButton(button):
 
 def displayBoard(board):
     """
-    - GUI display of the back-end game board array from the GameBoard class
+    - GUI display of the back end 2d array of the game board from the GameBoard class
     """
     w = tile_width
     h = tile_height
 
     for row in range(num_rows):
         for col in range(num_cols):
-            x = col * w
-            y = row * h + 50
+            x = col * w + game_board_x
+            y = row * h + game_board_y
             
-            if (not board[row][col].isFlipped):
-                if (not board[row][col].isFlagged):
-                    pygame.draw.rect(window, (0, 0, 215), [x, y, w, h])
-                    pygame.draw.rect(window, (0, 0, 255), [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
-                    pygame.draw.rect(window, (0, 0, 235), [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
-                else:
-                    pygame.draw.rect(window, (215, 0, 0), [x, y, w, h])
-                    pygame.draw.rect(window, (255, 0, 0), [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
-                    pygame.draw.rect(window, (235, 0, 0), [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
-            else: 
-                pygame.draw.rect(window, gray, [x, y, w, h])
+            if (board[row][col].isFlipped):
+                pygame.draw.rect(window, gray1, [x, y, w, h])
                 if (board[row][col].isMine()): 
-                    text(board[row][col].value, x + (w / 2), y + h, "Impact", 75, board[row][col].textColor(), "center")
+                    text(board[row][col].value, x + (w / 2), y + h, "Impact", tile_width * 2, board[row][col].textColor(), "center")
                 else:
-                    text(board[row][col].value, x + (w / 2), y + (h / 2), "Impact", 35, board[row][col].textColor(), "center")   
-
+                    text(board[row][col].value, x + (w / 2), y + (h / 2), "Impact", tile_width, board[row][col].textColor(), "center")  
+            else:
+                if (board[row][col].isFlagged):
+                    pygame.draw.rect(window, red1, [x, y, w, h])
+                    pygame.draw.rect(window, red2, [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
+                    pygame.draw.rect(window, red3, [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
+                elif (board[row][col].isMarked):
+                    pygame.draw.rect(window, green1, [x, y, w, h])
+                    pygame.draw.rect(window, green2, [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
+                    pygame.draw.rect(window, green3, [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
+                else:
+                    pygame.draw.rect(window, blue1, [x, y, w, h])
+                    pygame.draw.rect(window, blue2, [x + (w / 20), y + (h / 20), w - (w / 10), h - (h / 10)])
+                    pygame.draw.rect(window, blue3, [x + (w / 4), y + (h / 4), w - (w / 2), h - (h / 2)])
+                 
 def gameLoop():
     """
-    - game loop and menu system
+    - menu system and game loop
     """
-    openWindow = True
     screen = "main_menu_screen"
+    openWindow = True
 
     # setup the game board
     game_board.createBoard()
@@ -110,14 +127,15 @@ def gameLoop():
             pygame.display.update()
 
             # GUI display
-            window.fill(gray)
+            window.fill(gray1)
             text("Minesweeper", window_width / 2, 50, "Impact", 48, white, "center")  
             displayButton(buttons["start"])
             displayButton(buttons["help"])
             displayButton(buttons["settings"])
             displayButton(buttons["high_scores"])
             text("Created by Kevin Henneberger, Adam Wiener,", window_width / 2, 425, "Impact", 16, white, "center")  
-            text("Matt Aber, and Baptiste Saliba", window_width / 2, 450, "Impact", 16, white, "center") 
+            text("Matt Aber, and Baptiste Saliba", window_width / 2, 450, "Impact", 16, white, "center")
+
             # event handling
             for event in pygame.event.get():
                 # check if the user clicked the mouse
@@ -148,7 +166,7 @@ def gameLoop():
             pygame.display.update()
 
             # GUI display
-            window.fill(gray)
+            window.fill(gray1)
             text("Help", window_width / 2, 50, "Impact", 48, white, "center")
 
             instructions = [
@@ -189,7 +207,7 @@ def gameLoop():
             pygame.display.update()
 
             # GUI display
-            window.fill(gray)
+            window.fill(gray1)
             text("Settings", window_width / 2, 50, "Impact", 48, white, "center")  
             displayButton(buttons["settings_back"])
 
@@ -217,7 +235,7 @@ def gameLoop():
             pygame.display.update()
 
             # GUI display
-            window.fill(gray)
+            window.fill(gray1)
             text("High Scores", window_width / 2, 50, "Impact", 48, white, "center")  
             displayButton(buttons["high_scores_back"])
 
@@ -257,7 +275,7 @@ def gameLoop():
             # update pygame frame
             pygame.display.update()
 
-            window.fill((175, 175, 175))
+            window.fill(gray2)
 
             # GUI display of board
             displayBoard(game_board.board)
@@ -271,16 +289,16 @@ def gameLoop():
                     mouseX = mousePosition[0]
                     mouseY = mousePosition[1]
 
-                    # convert mouseX and mouseY into row and column
-                    input_col = int(mouseX // tile_width)
-                    input_row = int((mouseY - 50) // tile_height)
+                    # convert mouseX and mouseY coordinates into row and column
+                    input_col = int((mouseX - game_board_x) // tile_width)
+                    input_row = int((mouseY - game_board_y) // tile_height)
 
                     # guarantee that the user guesses an empty space on the first guess
                     if (firstTurn):
                         game_board.guaranteeEmptyCell(input_row, input_col)
 
                     # if the user left clicks
-                    if (event.button == 1):
+                    if (event.button == 1 and not (game_board.board[input_row][input_col].isFlagged or game_board.board[input_row][input_col].isMarked)):
                         # flip the tile the user guessed
                         game_board.board[input_row][input_col].flip()
 
@@ -300,8 +318,20 @@ def gameLoop():
 
                     # if the user right clicks
                     elif (event.button == 3 and firstTurn == False):
-                        # mark the tile the user guessed as a flag
-                        game_board.board[input_row][input_col].flag()
+
+                        game_board.board[input_row][input_col].count += 1
+
+                        # unmark the tile the user guessed as a flag
+                        game_board.board[input_row][input_col].unflag()
+                        # unmark the tile the user guessed as marked
+                        game_board.board[input_row][input_col].unmark()
+                    
+                        if (game_board.board[input_row][input_col].count % 3 == 1):
+                            # mark the tile the user guessed as a flag
+                            game_board.board[input_row][input_col].flag()
+                        elif (game_board.board[input_row][input_col].count % 3 == 2):
+                            # mark the tile the user guessed as marked
+                            game_board.board[input_row][input_col].mark()
 
                 # allow the user to exit the window
                 if (event.type == pygame.QUIT):
@@ -316,7 +346,7 @@ def gameLoop():
             # GUI display
             game_board.revealMines()
             displayBoard(game_board.board)
-            text("GAME OVER!", window_width / 2, 200, "Impact", 48, (255, 0, 0), "center")  
+            text("GAME OVER!", window_width / 2, 175, "Impact", 48, white, "center")  
 
             # event handling
             for event in pygame.event.get():
@@ -333,7 +363,7 @@ def gameLoop():
             # GUI display
             displayBoard(game_board.board)
             font = pygame.font.SysFont("Impact", 48)
-            text("YOU WIN!", window_width / 2, 200, "Impact", 48, (0, 255, 0), "center")  
+            text("YOU WIN!", window_width / 2, 175, "Impact", 48, white, "center")  
 
             # event handling
             for event in pygame.event.get():

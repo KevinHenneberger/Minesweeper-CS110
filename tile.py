@@ -7,6 +7,8 @@ class Tile:
         self.value = ' '
         self.isFlipped = False
         self.isFlagged = False
+        self.isMarked = False
+        self.count = 0
 
     def flip(self):
         """
@@ -19,6 +21,24 @@ class Tile:
         - set isFlagged to True
         """
         self.isFlagged = True
+
+    def unflag(self):
+        """
+        - set isFlagged to False
+        """
+        self.isFlagged = False
+
+    def mark(self):
+        """
+        - set isMarked to True
+        """
+        self.isMarked = True
+
+    def unmark(self):
+        """
+        - set isMarked to False
+        """
+        self.isMarked = False
 
     def isMine(self):
         """
