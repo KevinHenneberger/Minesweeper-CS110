@@ -240,10 +240,19 @@ def gameLoop():
                     # change screen
                     if (buttons["easy"].mouseOver(mouseX, mouseY)):
                         difficulty = "easy"
+                        buttons["easy"].fgColor = (0, 200, 0)
+                        buttons["medium"].fgColor = (200, 200, 200)
+                        buttons["hard"].fgColor = (200, 200, 200)
                     elif (buttons["medium"].mouseOver(mouseX, mouseY)):
                         difficulty = "medium"
+                        buttons["medium"].fgColor = (0, 200, 0)
+                        buttons["easy"].fgColor = (200, 200, 200)
+                        buttons["hard"].fgColor = (200, 200, 200)
                     elif (buttons["hard"].mouseOver(mouseX, mouseY)):
                         difficulty = "hard"
+                        buttons["hard"].fgColor = (0, 200, 0)
+                        buttons["easy"].fgColor = (200, 200, 200)
+                        buttons["medium"].fgColor = (200, 200, 200)
                     elif (buttons["settings_back"].mouseOver(mouseX, mouseY)):
                         screen = "main_menu_screen"
 
