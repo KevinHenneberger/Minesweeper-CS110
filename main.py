@@ -22,20 +22,10 @@ green3 = (0, 155, 0)
 window_width = 400
 window_height = 500
 
-num_rows = 9
-num_cols = 9
-num_mines = 10
-
 game_board_x = 25
 game_board_y = 125
 game_board_width = 350
 game_board_height = 350
-
-tile_width = game_board_width // num_cols
-tile_height = game_board_height // num_rows
-
-# create a 9 x 9 game board with 10 mines
-game_board = gameboard.GameBoard(num_rows, num_cols, num_mines)
 
 # buttons
 buttons = {}
@@ -46,6 +36,10 @@ buttons["high_scores"] = button.Button(325, "High Scores")
 buttons["help_back"] = button.Button(400, "Back")
 buttons["settings_back"] = button.Button(400, "Back")
 buttons["high_scores_back"] = button.Button(400, "Back")
+buttons["easy"] = button.Button(100, "Easy")
+buttons["medium"] = button.Button(175, "Medium")
+buttons["hard"] = button.Button(250, "Hard")
+buttons["play-again"] = button.Button(250, "Play Again")
 
 # initialize pygame
 window = pygame.display.set_mode((window_width, window_height))
@@ -72,7 +66,7 @@ def displayButton(button):
     pygame.draw.rect(window, button.fgColor, [button.x + 5, button.y + 5, button.w - 10, button.h - 10])
     text(button.text, button.x + button.w / 2, button.y + button.h / 2, "Impact", 24, button.textColor, "center")
 
-def displayBoard(board):
+def displayBoard(board, tile_width, tile_height, num_rows, num_cols):
     """
     - GUI display of the back end 2d array of the game board from the GameBoard class
     """
@@ -110,15 +104,35 @@ def gameLoop():
     """
     screen = "main_menu_screen"
     openWindow = True
-
-    # setup the game board
-    game_board.createBoard()
-    game_board.placeMines()
-    game_board.fillBoard()
-
+    difficulty = "easy"
     firstTurn = True
 
     while (openWindow):
+
+        if (firstTurn):
+            if (difficulty == "easy"):
+                num_rows = 9
+                num_cols = 9
+                num_mines = 10
+            elif (difficulty == "medium"):
+                num_rows = 16
+                num_cols = 16
+                num_mines = 40
+            elif (difficulty == "hard"):
+                num_rows = 18
+                num_cols = 18
+                num_mines = 64
+
+            tile_width = game_board_width // num_cols
+            tile_height = game_board_height // num_rows
+
+            # create the game board
+            game_board = gameboard.GameBoard(num_rows, num_cols, num_mines)
+
+            # setup the game board
+            game_board.createBoard()
+            game_board.placeMines()
+            game_board.fillBoard()
 
         # main menu screen
         if (screen == "main_menu_screen"):
@@ -208,7 +222,10 @@ def gameLoop():
 
             # GUI display
             window.fill(gray1)
-            text("Settings", window_width / 2, 50, "Impact", 48, white, "center")  
+            text("Settings", window_width / 2, 50, "Impact", 48, white, "center")
+            displayButton(buttons["easy"])
+            displayButton(buttons["medium"])
+            displayButton(buttons["hard"])  
             displayButton(buttons["settings_back"])
 
             # event handling
@@ -221,7 +238,13 @@ def gameLoop():
                     mouseY = mousePosition[1]
 
                     # change screen
-                    if (buttons["settings_back"].mouseOver(mouseX, mouseY)):
+                    if (buttons["easy"].mouseOver(mouseX, mouseY)):
+                        difficulty = "easy"
+                    elif (buttons["medium"].mouseOver(mouseX, mouseY)):
+                        difficulty = "medium"
+                    elif (buttons["hard"].mouseOver(mouseX, mouseY)):
+                        difficulty = "hard"
+                    elif (buttons["settings_back"].mouseOver(mouseX, mouseY)):
                         screen = "main_menu_screen"
 
                 # allow the user to exit the window
@@ -278,7 +301,7 @@ def gameLoop():
             window.fill(gray2)
 
             # GUI display of board
-            displayBoard(game_board.board)
+            displayBoard(game_board.board, tile_width, tile_height, num_rows, num_cols)
 
             # event handling
             for event in pygame.event.get():
@@ -345,11 +368,24 @@ def gameLoop():
 
             # GUI display
             game_board.revealMines()
-            displayBoard(game_board.board)
+            displayBoard(game_board.board, tile_width, tile_height, num_rows, num_cols)
             text("GAME OVER!", window_width / 2, 175, "Impact", 48, white, "center")  
+            displayButton(buttons["play-again"])
 
             # event handling
             for event in pygame.event.get():
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
+
+                    # change screen
+                    if (buttons["play-again"].mouseOver(mouseX, mouseY)):
+                        screen = "main_menu_screen"
+                        firstTurn = True
+
                 # allow the user to exit the window
                 if (event.type == pygame.QUIT):
                     openWindow = False
@@ -361,12 +397,25 @@ def gameLoop():
             pygame.display.update()
 
             # GUI display
-            displayBoard(game_board.board)
+            displayBoard(game_board.board, tile_width, tile_height, num_rows, num_cols)
             font = pygame.font.SysFont("Impact", 48)
             text("YOU WIN!", window_width / 2, 175, "Impact", 48, white, "center")  
+            displayButton(buttons["play-again"])
 
             # event handling
             for event in pygame.event.get():
+                # check if the user clicked the mouse
+                if (event.type == pygame.MOUSEBUTTONDOWN):
+                    # get mouse x and y coordinates
+                    mousePosition = pygame.mouse.get_pos()
+                    mouseX = mousePosition[0]
+                    mouseY = mousePosition[1]
+
+                    # change screen
+                    if (buttons["play-again"].mouseOver(mouseX, mouseY)):
+                        screen = "main_menu_screen"
+                        firstTurn = True
+
                 # allow the user to exit the window
                 if (event.type == pygame.QUIT):
                     openWindow = False
