@@ -2,6 +2,7 @@ import gui
 
 def main():
 
-    gui.gameLoop()
+    game_gui = gui.GUI()
+    game_gui.gameLoop()
 
 main()

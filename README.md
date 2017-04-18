@@ -1,10 +1,10 @@
 # Minesweeper (3/14)
 
 # TODO List
-1) Convert mainLoop() into a Class
+1) Convert mainLoop() into a Class - DONE
 2) Play again button - DONE
-3) Add instructions to the "Help" screen
-4) Add difficulty settings (easy, medium, or hard) to the "Settings" screen - DONE
+3) Add difficulty settings (easy, medium, or hard) to the "Settings" screen - DONE
+4) Add instructions to the "Help" screen
 5) Display a timer
 6) Scoring feature using timer 
 7) Counter for number of remaining mines
