@@ -103,11 +103,13 @@ class GameBoard:
             # loop through the 8 adjacent tiles
             for r in range(row - 1, row + 2):
                 for c in range(col - 1, col + 2):
-                    while (self.board[r][c].isMine()):
-                        # move mine
-                        self.board[r][c].value = ' ' 
-                        # replace mine
-                        self.placeMine()    
+                    # prevent index errors
+                    if (r >= 0 and c >= 0 and r < self.num_rows and c < self.num_cols):
+                        while (self.board[r][c].isMine()):
+                            # move mine
+                            self.board[r][c].value = ' ' 
+                            # replace mine
+                            self.placeMine()    
 
             self.fillBoard()
 
