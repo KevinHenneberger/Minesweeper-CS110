@@ -28,6 +28,9 @@ class GameGUI:
         self.openWindow = True
         self.firstTurn = True
 
+        """
+        dictionary of predefined colors
+        """
         self.colors = {
             "white": (255, 255, 255),
             "black": (0, 0, 0),
@@ -44,6 +47,9 @@ class GameGUI:
             "green3": (0, 155, 0)
         }
 
+        """
+        dictionary of button objects from the Button class
+        """
         self.buttons = {
             "start": button.Button(100, "Start"),
             "help": button.Button(175, "Help"),
