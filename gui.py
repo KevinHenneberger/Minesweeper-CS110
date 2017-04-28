@@ -1,6 +1,7 @@
 import pygame
 import gameboard
 import button
+import time
 
 class GameGUI:
 
@@ -12,7 +13,7 @@ class GameGUI:
 
         self.num_rows = 9
         self.num_cols = 9
-        self.num_mines = 10
+        self.num_mines = 0
         self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)
 
         self.game_board_x = 25
@@ -27,6 +28,12 @@ class GameGUI:
         self.difficulty = "easy"
         self.openWindow = True
         self.firstTurn = True
+        self.start_time = time.time()
+        self.mines_remaining = self.num_mines
+        self.score = 0
+        self.name = "player1"
+
+        self.high_scores_list = []
 
         """
         dictionary of predefined colors
@@ -61,7 +68,8 @@ class GameGUI:
             "easy": button.Button(100, "Easy"),
             "medium": button.Button(175, "Medium"),
             "hard": button.Button(250, "Hard"),
-            "play-again": button.Button(215, "Play Again")
+            "play-again-l": button.Button(200, "Play Again"),
+            "play-again-w": button.Button(300, "Play Again")
         }
 
     # initialize pygame
@@ -147,6 +155,7 @@ class GameGUI:
                 # change screen
                 if (self.buttons["start"].mouseOver(mouseX, mouseY)):
                     self.screen = "play_game_screen"
+                    self.start_time = time.time()
                 elif (self.buttons["help"].mouseOver(mouseX, mouseY)):
                     self.screen = "help_screen"
                 elif (self.buttons["settings"].mouseOver(mouseX, mouseY)):
@@ -163,7 +172,14 @@ class GameGUI:
         # update pygame frame
         pygame.display.update()
 
+        current_time = time.time()
+        self.score = int(current_time - self.start_time)
+
         self.window.fill(self.colors["gray2"])
+        pygame.draw.rect(self.window, self.colors["gray1"], [60, 25, 80, 50])
+        self.text(str(self.num_mines), 100, 48, "Impact", 50, self.colors["red1"], "center")
+        pygame.draw.rect(self.window, self.colors["gray1"], [260, 25, 80, 50])
+        self.text(str(self.score), 300, 48, "Impact", 50, self.colors["red1"], "center")
 
         # GUI display of board
         self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)
@@ -220,9 +236,11 @@ class GameGUI:
                         if (self.game_board.board[input_row][input_col].count % 3 == 1):
                             # mark the tile the user guessed as a flag
                             self.game_board.board[input_row][input_col].flag()
+                            self.num_mines -= 1
                         elif (self.game_board.board[input_row][input_col].count % 3 == 2):
                             # mark the tile the user guessed as marked
                             self.game_board.board[input_row][input_col].mark()
+                            self.num_mines += 1
 
             # allow the user to exit the window
             if (event.type == pygame.QUIT):
@@ -238,15 +256,23 @@ class GameGUI:
         self.text("Help", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")
 
         instructions = [
-            "Insert step 1 here...", 
-            "Insert step 2 here...", 
-            "Insert step 3 here...", 
-            "Insert step 4 here...", 
-            "Insert step 5 here..."
+            "* To win, open all the cells which do not contain a mine.",
+            "* Try to win as quickly as possible.",
+            "* If you guess a cell with a mine, you lose.",
+            "* Every non-mine cell will tell you the total number of mines",
+            "  in the eight neighboring cells.",
+            "* To open a square, point at the square and click on it.",
+            "* To mark a square you think is a mine with a flag, point",
+            "  and right-click.",
+            "* Right-click twice to mark a cell that you are unsure about.",
+            "* The first square you open is never a mine.",
+            "* The upper left corner contains the number of mines left to find.",
+            "* The upper right corner contains a time counter.",
+            "* Good luck sweeping!"
         ]
 
         for i in range(len(instructions)):
-            self.text(str(i + 1) + ") " + instructions[i], 35, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
+            self.text(instructions[i], 15, i * 20 + 85, "Impact", 14, self.colors["white"], "left") 
 
         self.displayButton(self.buttons["help_back"])
 
@@ -296,16 +322,19 @@ class GameGUI:
                     self.num_rows = 9
                     self.num_cols = 9
                     self.num_mines = 10
+                    self.mines_remaining = 10
                 elif (self.buttons["medium"].mouseOver(mouseX, mouseY)):
                     self.difficulty = "medium"
+                    self.num_rows = 12
+                    self.num_cols = 12
+                    self.num_mines = 24
+                    self.mines_remaining = 24
+                elif (self.buttons["hard"].mouseOver(mouseX, mouseY)):
+                    self.difficulty = "hard"
                     self.num_rows = 16
                     self.num_cols = 16
                     self.num_mines = 40
-                elif (self.buttons["hard"].mouseOver(mouseX, mouseY)):
-                    self.difficulty = "hard"
-                    self.num_rows = 18
-                    self.num_cols = 18
-                    self.num_mines = 64
+                    self.mines_remaining = 40
                 elif (self.buttons["settings_back"].mouseOver(mouseX, mouseY)):
                     self.screen = "main_menu_screen"
 
@@ -337,16 +366,8 @@ class GameGUI:
         self.text("High Scores", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")  
         self.displayButton(self.buttons["high_scores_back"])
 
-        high_scores_list = [
-            "Name 1 " + ". " * 40 + "100", 
-            "Name 2 " + ". " * 40 + "200",
-            "Name 3 " + ". " * 40 + "300", 
-            "Name 4 " + ". " * 40 + "400",
-            "Name 5 " + ". " * 40 + "500"
-        ]
-
-        for i in range(len(high_scores_list)):
-            self.text(str(i + 1) + ") " + high_scores_list[i], 35, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
+        for i in range(len(self.high_scores_list)):
+            self.text(str(i + 1) + ") " + self.high_scores_list[i][0] + " - " + self.high_scores_list[i][1], 35, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
 
         self.displayButton(self.buttons["help_back"]) 
 
@@ -373,10 +394,11 @@ class GameGUI:
         pygame.display.update()
 
         # GUI display
+        self.window.fill(self.colors["gray1"])
         self.game_board.revealMines()
         self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)
-        self.text("GAME OVER!", self.window_w / 2, 175, "Impact", 48, self.colors["white"], "center")  
-        self.displayButton(self.buttons["play-again"])
+        self.text("Game Over!", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")  
+        self.displayButton(self.buttons["play-again-l"])
 
         # event handling
         for event in pygame.event.get():
@@ -388,7 +410,7 @@ class GameGUI:
                 mouseY = mousePosition[1]
 
                 # change screen
-                if (self.buttons["play-again"].mouseOver(mouseX, mouseY)):
+                if (self.buttons["play-again-l"].mouseOver(mouseX, mouseY)):
                     self.screen = "main_menu_screen"
                     self.firstTurn = True
 
@@ -402,13 +424,27 @@ class GameGUI:
         pygame.display.update()
 
         # GUI display
+        self.window.fill(self.colors["gray1"])
         self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)
         font = pygame.font.SysFont("Impact", 48)
-        self.text("YOU WIN!", self.window_w / 2, 175, "Impact", 48, self.colors["white"], "center")  
-        self.displayButton(self.buttons["play-again"])
+        self.text("You Win!", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")  
+        self.displayButton(self.buttons["play-again-w"])
+
+        pygame.draw.rect(self.window, self.colors["gray2"], [20, 115, 360, 50])
+        self.text("Score: " + str(self.score), 25, 125, "Impact", 25, self.colors["white"], "left")  
+
+        pygame.draw.rect(self.window, self.colors["gray2"], [20, 190, 360, 50])
+        self.text("Enter a name: " + self.name, 25, 200, "Impact", 25, self.colors["white"], "left")
 
         # event handling
         for event in pygame.event.get():
+
+            if (event.type == pygame.KEYDOWN):
+                if (event.key == 8):
+                    self.name = self.name[:-1]
+                else:
+                    self.name += chr(event.key)
+
             # check if the user clicked the mouse
             if (event.type == pygame.MOUSEBUTTONDOWN):
                 # get mouse x and y coordinates
@@ -417,12 +453,13 @@ class GameGUI:
                 mouseY = mousePosition[1]
 
                 # change screen
-                if (self.buttons["play-again"].mouseOver(mouseX, mouseY)):
+                if (self.buttons["play-again-w"].mouseOver(mouseX, mouseY)):
+                    self.high_scores_list.append((self.name, str(self.score)))
                     self.screen = "main_menu_screen"
                     self.firstTurn = True
 
             # allow the user to exit the window
-            if (event.type == pygame.QUIT):
+            elif (event.type == pygame.QUIT):
                 self.openWindow = False
 
     def gameLoop(self):
