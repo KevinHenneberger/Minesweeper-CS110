@@ -2,6 +2,7 @@ import pygame
 import gameboard
 import button
 import time
+import highscores
 
 class GameGUI:
 
@@ -13,7 +14,7 @@ class GameGUI:
 
         self.num_rows = 9
         self.num_cols = 9
-        self.num_mines = 0
+        self.num_mines = 10
         self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)
 
         self.game_board_x = 25
@@ -32,8 +33,6 @@ class GameGUI:
         self.mines_remaining = self.num_mines
         self.score = 0
         self.name = "player1"
-
-        self.high_scores_list = []
 
         """
         dictionary of predefined colors
@@ -366,8 +365,16 @@ class GameGUI:
         self.text("High Scores", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")  
         self.displayButton(self.buttons["high_scores_back"])
 
-        for i in range(len(self.high_scores_list)):
-            self.text(str(i + 1) + ") " + self.high_scores_list[i][0] + " - " + self.high_scores_list[i][1], 35, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
+        hs = highscores.HighScores().outputData()
+
+        bd = len(hs)
+        if (bd >= 5):
+            bd = 5
+
+        for i in range(bd):
+            name, score = hs[i]
+            self.text(str(i + 1) + ") " + name, 100, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
+            self.text(str(score), 250, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
 
         self.displayButton(self.buttons["help_back"]) 
 
@@ -454,7 +461,8 @@ class GameGUI:
 
                 # change screen
                 if (self.buttons["play-again-w"].mouseOver(mouseX, mouseY)):
-                    self.high_scores_list.append((self.name, str(self.score)))
+                    # add score to JSON file
+                    hs = highscores.HighScores().addData(self.name, self.score)
                     self.screen = "main_menu_screen"
                     self.firstTurn = True
 
