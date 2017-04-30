@@ -43,3 +43,4 @@ for t in tests:
     testboard1.placeMines()
     testboard1.fillBoard()
     print("Successfully created board!")
+
