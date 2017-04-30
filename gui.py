@@ -155,6 +155,15 @@ class GameGUI:
                 if (self.buttons["start"].mouseOver(mouseX, mouseY)):
                     self.screen = "play_game_screen"
                     self.start_time = time.time()
+                    if (self.difficulty == "easy"):
+                        self.num_mines = 10
+                        self.mines_remaining = 10
+                    elif (self.difficulty == "medium"):
+                        self.num_mines = 24
+                        self.mines_remaining = 24
+                    elif (self.difficulty == "hard"):
+                        self.num_mines = 40
+                        self.mines_remaining = 40
                 elif (self.buttons["help"].mouseOver(mouseX, mouseY)):
                     self.screen = "help_screen"
                 elif (self.buttons["settings"].mouseOver(mouseX, mouseY)):
