@@ -52,7 +52,7 @@ class GameBoard:    #This class designs the gameboard that is to be used in the 
                 if (not self.board[row][col].isMine()):    #A further restriction: look only at empty tiles (tiles that are not mines).
 
                     # initialize count for accumulator
-                    num_mines_touches = 0                #The number of adjacent mines; this number is an accumulator and will be increased during the counting process.
+                    num_adjacent_mines = 0                #The number of adjacent mines; this number is an accumulator and will be increased during the counting process.
 
                     # loop through the 8 adjacent tiles
                     for r in range(row - 1, row + 2):        #Look at the indices of both adjacent rows. The variables r and row are numbers (row indices). The second argument of range() is row + 2 because range() has an offset by 1. That is, this function will look at the following indices: row - 1, row + 0, and row + 1.
@@ -60,17 +60,17 @@ class GameBoard:    #This class designs the gameboard that is to be used in the 
                             # prevent index errors
                             if (r >= 0 and c >= 0 and r < self.num_rows and c < self.num_cols):    #A further restriction, to prevent out-of-bounds indexing errors. Of the six indices looked at by the two for loops above, look only at the ones that actually exist in the gameboard.
                                 if (self.board[r][c].isMine()):    #All the for loops above ensure that, for each non-mine tile in the gameboard, the counting process looks for mines in the tile itself (which is empty and thus contributes nothing to the accumulator) and in the eights adjacent tiles, if they exist.
-                                    num_mines_touches += 1         #Add 1 to the accumulator for each adjacent mine, so that the accumulator ultimately equals the exact number of mines adjacent to the empty tile under examination.
+                                    num_adjacent_mines += 1         #Add 1 to the accumulator for each adjacent mine, so that the accumulator ultimately equals the exact number of mines adjacent to the empty tile under examination.
 
                     # if the tile touches 1 or more mines (not empty), assign the value of the tile to the number of mines it touches
-                    if (num_mines_touches != 0):
-                        self.board[row][col].value = str(num_mines_touches)    #For each empty tile, set its value as the number of adjacent mines, in the form of text.
+                    if (num_adjacent_mines != 0):
+                        self.board[row][col].value = str(num_adjacent_mines)    #For each empty tile, set its value as the number of adjacent mines, in the form of text.
                     else:
                         self.board[row][col].value = ' '    #For an empty tile that has zero adjacent mines, its value is the space character, in the form of text.
 
     #So far, the methods have set up the gameboard, setting all its states before the player has started the game. The following methods concern changes to the states of the gameboard, made by the players.
 
-    def clearEmptyCells(self, row, col):    #This method is to be executed if the player selects an empty tile that is not adjacent to any mine.
+    def clearEmptyTiles(self, row, col):    #This method is to be executed if the player selects an empty tile that is not adjacent to any mine.
         """
         - flip all of the adjacent empty tiles
         """
@@ -86,18 +86,16 @@ class GameBoard:    #This class designs the gameboard that is to be used in the 
                         # if the adjacent cells are also empty...
                         if (self.board[r][c].isEmpty()):        #Furthermore, if the adjacent tile is empty, then recursively execute this entire method for that tile. This flips all contiguous empty tiles.
                             # repeat the process on those cells recursively 
-                            self.clearEmptyCells(r, c)
+                            self.clearEmptyTiles(r, c)
 
-    def revealMines(self):    #Flip every mine in the board. This is only used if the game has ended.
-        """
-        - reveal all of the mines
-        """
-        for row in range(self.num_rows):
-            for col in range(self.num_cols):
-                if (self.board[row][col].isMine()):
-                    self.board[row][col].flip()
+        '''if (not self.board[input_row][input_col].isFlipped):        #If the adjacent tile is not flipped, then flip it.
+                        self.board[input_row][input_col].flip()
+                        # if the adjacent cells are also empty...
+                        if (self.board[input_row][input_col].isEmpty()):        #Furthermore, if the adjacent tile is empty, then recursively execute this entire method for that tile. This flips all contiguous empty tiles.
+                            # repeat the process on those cells recursively 
+                            self.clearEmptyTiles(input_row, input_col)'''
 
-    def guaranteeEmptyCell(self, row, col):    #Guarantee that the first tile selected by the player is an empty tile, by moving any mine that happens to be there. The mine is moved by executing the method placeMine(). This method is executed when the player first selects a tile.
+    def guaranteeEmptyTile(self, row, col):    #Guarantee that the first tile selected by the player is an empty tile, by moving any mine that happens to be there. The mine is moved by executing the method placeMine(). This method is executed when the player first selects a tile.
         """
         - guarantee that the user guesses an empty space on the first guess
         """
@@ -120,6 +118,15 @@ class GameBoard:    #This class designs the gameboard that is to be used in the 
         - if the user guesses a mine, return True
         """
         return self.board[row][col].isMine()
+
+    def revealMines(self):    #Flip every mine in the board. This is only used if the game has ended.
+        """
+        - reveal all of the mines
+        """
+        for row in range(self.num_rows):
+            for col in range(self.num_cols):
+                if (self.board[row][col].isMine()):
+                    self.board[row][col].flip()
 
     def hasWon(self):    #This returns a flag that the user has selected every empty tile, thereby winning the game.
         """ 
