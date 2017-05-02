@@ -376,14 +376,10 @@ class GameGUI:
 
         hs = highscores.HighScores().outputData()
 
-        bd = len(hs)
-        if (bd >= 5):
-            bd = 5
-
-        for i in range(bd):
+        for i in range(len(hs)):
             name, score = hs[i]
-            self.text(str(i + 1) + ") " + name, 100, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
-            self.text(str(score), 250, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
+            self.text(str(i + 1) + ") " + name, 100, i * 28 + 100, "Impact", 18, self.colors["white"], "left") 
+            self.text(str(score), 265, i * 28 + 100, "Impact", 18, self.colors["white"], "left") 
 
         self.displayButton(self.buttons["help_back"]) 
 
@@ -471,7 +467,7 @@ class GameGUI:
                 # change screen
                 if (self.buttons["play-again-w"].mouseOver(mouseX, mouseY)):
                     # add score to JSON file
-                    hs = highscores.HighScores().addData(self.name, self.score)
+                    highscores.HighScores().addData(self.name, self.score)
                     self.screen = "main_menu_screen"
                     self.firstTurn = True
 

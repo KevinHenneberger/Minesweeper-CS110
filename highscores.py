@@ -1,4 +1,5 @@
 import json
+import requests
 
 class HighScores:
 
@@ -7,10 +8,12 @@ class HighScores:
         self.scores = []
 
     def retrieveData():
-        scoresFile = open("scores.json", "r")
-        scoresDict = json.load(scoresFile)
-        scoresFile.close()
-        return scoresDict
+        try:
+            r = requests.get("http://128.226.244.161/data.json", timeout=10)
+        except requests.ConnectTimeout:
+            print("Sorry, our servers are down.")
+        else:
+            return r.json() # returns json dictionary from server
 
     def outputData(self):
         scoresDict = HighScores.retrieveData()
@@ -18,11 +21,12 @@ class HighScores:
         for i in scoresDict:
             self.scores.append((i, scoresDict[i]))
 
-        return sorted(self.scores, key=lambda tup: tup[1])
+        return sorted(self.scores, key=lambda tup: int(tup[1]))
 
     def addData(self, name, score):
-        scoresDict = HighScores.retrieveData()
-        scoresDict[name] = score
-        scoresFile = open("scores.json", "w")
-        json.dump(scoresDict, scoresFile)
-        scoresFile.close()
+        arg = {"name": name, "score": score}
+
+        try:
+            r = requests.get("http://128.226.244.161/leaderboards.py", params=arg, timeout=10)
+        except requests.ConnectTimeout:
+            print("Sorry, our servers are down.")
