@@ -8,8 +8,8 @@ class Button:
         self.h = 50
         self.text = text
         self.textColor = (255, 255, 255)
-        self.bgColor = (185, 185, 185)
-        self.fgColor = (200, 200, 200)
+        self.bgColor = (0, 0, 0)
+        self.fgColor = (60, 60, 255)
 
     def mouseOver(self, mouseX, mouseY):
         """
