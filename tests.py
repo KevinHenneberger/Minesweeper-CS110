@@ -53,14 +53,14 @@ print("=" * 50)
 
 button_test = button.Button(0, "Test")
 
-print(button_test.mouseOver(121, 1))        #should equal True
-print(button_test.mouseOver(1000, 1000))    #should equal False
+print(button_test.mouseOver(121, 1)) # should equal True
+print(button_test.mouseOver(1000, 1000)) # should equal False
 
 print("=" * 50)
 print("### Testing the GameBoard module (game board.py) ###")
 print("=" * 50)
 
-tests = [(10,10,9), (12,12,24), (16,16,40)]    #The three difficulties: Easy, Medium, and Hard.
+tests = [(10,10,9), (12,12,24), (16,16,40)] # the three difficulties: Easy, Medium, and Hard.
 
 for t in tests:
     print("Attempt to create a board with {} rows, {} columns, and {} mines.".format(t[0], t[1], t[2]))
