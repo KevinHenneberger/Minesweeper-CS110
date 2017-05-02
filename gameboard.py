@@ -129,3 +129,14 @@ class GameBoard:
                     return False
 
         return True
+
+    def resetBoard(self):
+        """
+        - reset board to original state
+        """
+        for row in range(self.num_rows):
+            for col in range(self.num_cols):
+                self.board[row][col].isFlipped = False
+                self.board[row][col].isFlagged = False
+                self.board[row][col].isMarked = False
+                self.board[row][col].count = 0

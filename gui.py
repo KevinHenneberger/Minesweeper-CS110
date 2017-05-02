@@ -18,7 +18,7 @@ class GameGUI:
         self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)
 
         self.game_board_x = 25
-        self.game_board_y = 125
+        self.game_board_y = 90
         self.game_board_w = 350
         self.game_board_h = 350
 
@@ -67,6 +67,7 @@ class GameGUI:
             "easy": button.Button(100, "Easy"),
             "medium": button.Button(175, "Medium"),
             "hard": button.Button(250, "Hard"),
+            "start_back": button.Button(440, "Back"),
             "play-again-l": button.Button(200, "Play Again"),
             "play-again-w": button.Button(300, "Play Again")
         }
@@ -155,6 +156,9 @@ class GameGUI:
                 if (self.buttons["start"].mouseOver(mouseX, mouseY)):
                     self.screen = "play_game_screen"
                     self.start_time = time.time()
+
+                    self.game_board.resetBoard()
+
                     if (self.difficulty == "easy"):
                         self.num_mines = 10
                         self.mines_remaining = 10
@@ -183,11 +187,15 @@ class GameGUI:
         current_time = time.time()
         self.score = int(current_time - self.start_time)
 
+        minutes, seconds = divmod(self.score, 60)
+        formatted_score = ("%2d:%02d" % (minutes, seconds))
+
         self.window.fill(self.colors["gray2"])
-        pygame.draw.rect(self.window, self.colors["gray1"], [60, 25, 80, 50])
-        self.text(str(self.num_mines), 100, 48, "Impact", 50, self.colors["red1"], "center")
-        pygame.draw.rect(self.window, self.colors["gray1"], [260, 25, 80, 50])
-        self.text(str(self.score), 300, 48, "Impact", 50, self.colors["red1"], "center")
+        pygame.draw.rect(self.window, self.colors["gray1"], [25, 25, 100, 50])
+        self.text(str(self.num_mines), 75, 48, "Impact", 50, self.colors["red1"], "center")
+        pygame.draw.rect(self.window, self.colors["gray1"], [265, 25, 100, 50])
+        self.text(str(formatted_score), 310, 48, "Impact", 50, self.colors["red1"], "center")
+        self.displayButton(self.buttons["start_back"])
 
         # GUI display of board
         self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)
@@ -200,6 +208,10 @@ class GameGUI:
                 mousePosition = pygame.mouse.get_pos()
                 mouseX = mousePosition[0]
                 mouseY = mousePosition[1]
+
+                # change screen
+                if (self.buttons["start_back"].mouseOver(mouseX, mouseY)):
+                    self.screen = "main_menu_screen"
 
                 # convert mouseX and mouseY coordinates into row and column
                 input_col = int((mouseX - self.game_board_x) // self.tile_w)
