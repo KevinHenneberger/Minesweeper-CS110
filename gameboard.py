@@ -15,7 +15,7 @@ class GameBoard:
         - create a 2D array of tile objects (num_rows x num_cols) 
         """
         for row in range(self.num_rows):
-            self.board.append([]) # add new row
+            self.board.append([]) # add row
             for col in range(self.num_cols):
                 self.board[row].append(tile.Tile(row, col)) # add tile objects to each row
 
@@ -50,7 +50,6 @@ class GameBoard:
             for col in range(self.num_cols):
 
                 if (not self.board[row][col].isMine()):
-
                     # initialize count for accumulator
                     num_mines_touches = 0
 
@@ -76,7 +75,7 @@ class GameBoard:
         for r in range(row - 1, row + 2):
             for c in range(col - 1, col + 2):
                 # prevent index errors
-                if (r >= 0 and c >= 0 and r < self.num_rows and c < self.num_cols):
+                if (r >= 0 and c >= 0 and r < self.num_rows and c < self.num_cols and self.board[r][c].isFlagged == False and self.board[r][c].isMarked == False):
                     # don't repeat the process on cells that are already flipped
                     # this is the base case for the recursion and prevents a max recursion error
                     if (not self.board[r][c].isFlipped):
@@ -129,14 +128,3 @@ class GameBoard:
                     return False
 
         return True
-
-    def resetBoard(self):
-        """
-        - reset board to original state
-        """
-        for row in range(self.num_rows):
-            for col in range(self.num_cols):
-                self.board[row][col].isFlipped = False
-                self.board[row][col].isFlagged = False
-                self.board[row][col].isMarked = False
-                self.board[row][col].count = 0

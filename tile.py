@@ -4,11 +4,11 @@ class Tile:
     def __init__(self, row, col):
         self.row = row
         self.col = col
-        self.value = ' '
+        self.value = ' ' # ' ' is an empty tile
         self.isFlipped = False
         self.isFlagged = False
         self.isMarked = False
-        self.count = 0
+        self.count = 0 # tracks how many times tile is clicked for flagging
 
     def flip(self):
         """

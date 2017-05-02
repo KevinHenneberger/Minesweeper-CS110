@@ -15,4 +15,4 @@ class Button:
         """
         - return if the mouse is hovered over the button or not
         """
-        return (self.x <= mouseX <= self.x + self.w and self.y <= mouseY <= self.y + self.h)
+        return ((self.x <= mouseX <= self.x + self.w) and (self.y <= mouseY <= self.y + self.h))
