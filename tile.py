@@ -77,3 +77,4 @@ class Tile:    #This class describes the tiles that are to be used in the game o
         elif (self.value == '*'):    #This tile is not an empty tile. It is, instead, a mine tile. The text displayed is an asterisk, which is displayed when the tile has been flipped. The color of the text is red.
             return (255, 0, 0)
 
+

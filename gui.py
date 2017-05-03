@@ -1,8 +1,9 @@
 import pygame       #This module, not native to Python, but not written by us, is used for displaying the game.
+import time         #This module, native to Python, is used herein for measuring the time that the player takes in finishing the game.
 import gameboard    #This module, written by us, constructs the game.
 import button       #This module, written by us, constructs the buttons that are displayed in Pygame. The buttons allow the player to interact with the computer via the graphical user interface displayed by Pygame.
-import time         #This module, native to Python, is used herein for measuring the time that the player takes in finishing the game.
-#import sys          #This allows the command sys.exit() to be used, which quits the program. Alternatively, the command raise SystemExit can be used, which does not require importing the module sys.py.
+import highscores   #This module, written by us, organizes the players' high scores.
+
 
 class GameGUI:      #This class describes the graphical user interface of the game of Minesweeper. It particularly describes how the gameboard is to be displayed. The design of the gameboard is already prespecified in the module gameboard.py. This class uses Pygame for the display of the graphical user interface.
 
@@ -14,42 +15,41 @@ class GameGUI:      #This class describes the graphical user interface of the ga
 
         self.num_rows = 9    #The gameboard is initialized so that it has nine rows.
         self.num_cols = 9    #The gameboard is initialized so that it has nine columns.
-        self.num_mines = 0  #The gameboard is initialized so that it has zero mines.
+        self.num_mines = 10  #The gameboard is initialized so that it has zero mines.
         self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)    #The gameboard is set up with the initialized states. These states persist for as long as the difficulty of the game is not changed. This means that, without having changed the difficulty, the player always wins as soon as he selects a tile.
 
         self.game_board_x = 25     #The x-coordinate of the gameboard's location.
-        self.game_board_y = 125    #The y-coordinate of the gameboard's location.
+        self.game_board_y = 90     #The y-coordinate of the gameboard's location.
         self.game_board_w = 350    #The width of the gameboard. The gameboard is a square.
         self.game_board_h = 350    #The height of the gameboard. The gameboard is a square.
 
-        #self.tile_w = self.game_board_w // self.num_cols    #The width of a single tile. The tile is a square. Its width equals the width of the board divided evenly by the number of columns. That is, the width of a tile equals the width of a row divided by the number of tiles per row.
-        #self.tile_h = self.game_board_h // self.num_rows    #The height of a single tile. The tile is a square. Its height equals the height of the board divided evenly by the number of rows. That is, the height of a tile equals the height of a column divided by the number of tiles per column.
+        self.tile_w = self.game_board_w // self.num_cols    #The width of a single tile. The tile is a square. Its width equals the width of the board divided evenly by the number of columns. That is, the width of a tile equals the width of a row divided by the number of tiles per row.
+        self.tile_h = self.game_board_h // self.num_rows    #The height of a single tile. The tile is a square. Its height equals the height of the board divided evenly by the number of rows. That is, the height of a tile equals the height of a column divided by the number of tiles per column.
 
         self.screen = "main_menu_screen"    #This sets Main Menu screen as the default screen. This screen will be the hub for all parts of the game, including the Play Game, Help, Settings, and High Scores screens. The Main Menu screen is not yet constructed.
         self.difficulty = "easy_difficulty"            #The game's difficulty is set to Easy by default.
         self.openWindow = True              #The window is open.
         self.firstTurn = True               #By default, the player is on his first turn in the game. He has not yet selected his first tile. This is relevant for guaranteeEmptyTile() in gameboard.py.
-        self.time_start = time.time()       #The amount of time that the player takes to complete the game will be measured. The measuring, from zero seconds, starts here.
-        self.mines_not_found_yet = self.num_mines    #This initializes the number of mines left to be found, so that it equals the total number of mines in the game. No mine has been flagged yet.
+        self.start_time = time.time()       #The amount of time that the player takes to complete the game will be measured. The measuring, from zero seconds, starts here.
+        self.mines_remaining = self.num_mines    #This initializes the number of mines left to be found, so that it equals the total number of mines in the game. No mine has been flagged yet.
         self.score = 0    #The score of the player is by default set to 0.
         self.name = "player1"    #The name of the player is by default set to player1.
-
-        self.high_scores_list = []    #A list containing the high scores of past games is created.
 
         """
         dictionary of predefined colors
         """
         self.colors = {                                  #This is a dictionary of every color in the game, except for the colors used for the numbers of flipped empty tiles.
             "white": (255, 255, 255),                    #This is the color of all text that is not part of the gameboard.
-            "grey_light": (200, 200, 200),                    #The next two colors are used for everything that is not assigned to another color in this dictionary. These two colors are particularly used for the backgrounds of the screens and the buttons. The lighter grey is preferred as a foreground color, whereas the darker grey is preferred as a background color.
+            "black": (0, 0, 0),                          #This is the color of borders around buttons.
+            "grey_light": (200, 200, 200),               #The next two colors are used for everything that is not assigned to another color in this dictionary. These two colors are particularly used for the backgrounds of the screens and the buttons. The lighter grey is preferred as a foreground color, whereas the darker grey is preferred as a background color.
             "grey_dark": (175, 175, 175),
-            "blue_dark": (0, 0, 215),                        #The next three colors are for the sprite of an unflagged, unmarked tile, the default state. This tile is presented by default, or can be obtained by right clicking a marked tile. This sprite comprises an interior blue square with two outer square borders, each farther border having a darker hue than the parts within it.
+            "blue_dark": (0, 0, 215),                    #The next three colors are for the sprite of an unflagged, unmarked tile, the default state. This tile is presented by default, or can be obtained by right clicking a marked tile. This sprite comprises an interior blue square with two outer square borders, each farther border having a darker hue than the parts within it.
             "blue_light": (0, 0, 255),
             "blue_medium": (0, 0, 235),
-            "red_dark": (215, 0, 0),                         #The next three colors are for the sprite of a so-called flagged tile. A flagged tile is a tile that has been flagged by the player (by right clicking a default tile) for having a mine underneath it. This sprite comprises an interior red square with two outer square borders, each farther border having a darker hue than the parts within it.
+            "red_dark": (215, 0, 0),                     #The next three colors are for the sprite of a so-called flagged tile. A flagged tile is a tile that has been flagged by the player (by right clicking a default tile) for having a mine underneath it. This sprite comprises an interior red square with two outer square borders, each farther border having a darker hue than the parts within it.
             "red_light": (255, 0, 0),
             "red_medium": (235, 0, 0),
-            "green_dark": (0, 135, 0),                       #The next three colors are for the sprite of a so-called marked tile. A marked tile is a tile that has been marked by the player (by right clicking a flagged tile) for having a state not yet determined by him. This sprite comprises an interior green square with two outer square borders, each farther border having a darker hue than the parts within it.
+            "green_dark": (0, 135, 0),                   #The next three colors are for the sprite of a so-called marked tile. A marked tile is a tile that has been marked by the player (by right clicking a flagged tile) for having a state not yet determined by him. This sprite comprises an interior green square with two outer square borders, each farther border having a darker hue than the parts within it.
             "green_light": (0, 175, 0),
             "green_medium": (0, 155, 0)
         }
@@ -59,20 +59,20 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         """
         self.buttons = {                                                        #This is a dictionary of every button in the game. The values are the buttons. The keys denote the purposes of the buttons. For each value, the first argument is the y-coordinate of the button. The second argument is the text that appears on the button.
             "play_game_button": button.Button(100, "Play Game"),                #The first four buttons take the player to from the main menu to different screens.
-            "settings_button": button.Button(175, "Settings"),
-            "help_button": button.Button(250, "Help"),
-            "high_scores_button": button.Button(325, "High Scores"),
+            "settings_button": button.Button(162, "Settings"),
+            "help_button": button.Button(225, "Help"),
+            "high_scores_button": button.Button(287, "High Scores"),
             #"help_back_button": button.Button(400, "Back"),                    #The next three buttons take the player back to the main menu screen from a different screen. These other screens are the Help, Settings, and High Scores screens.
             #"settings_back_button": button.Button(400, "Back"),
             #"high_scores_back_button": button.Button(400, "Back"),
             "easy_button": button.Button(100, "Easy"),                          #The next three buttons are used for selecting a level of difficulty of the game. They are all on the Settings screen.
             "medium_button": button.Button(200, "Medium"),
             "hard_button": button.Button(300, "Hard"),
-            #"play_again_loss_button": button.Button(200, "Play Again"),        #The next two buttons are used for returning to the main menu from the Play Game Screen. They are displayed after the game has been finished. The first of these two buttons is displayed only when the player loses the game. It differs from the second button by its vertical location on the screen.
+            #"play_again_lose_button": button.Button(200, "Play Again"),        #The next two buttons are used for returning to the main menu from the Play Game Screen. They are displayed after the game has been finished. The first of these two buttons is displayed only when the player loses the game. It differs from the second button by its vertical location on the screen.
             "main_menu_button": button.Button(400, "Main Menu"),                #The second of these two buttons is displayed only when the player wins the game. It differs from the first button by its vertical location on the screen.
             "play_again_button": button.Button(300, "Play Again"),               #This button allows the player to start a new game without first going to the Main Menu screen.
-            "main_menu_2_button": button.Button(25, "Main Menu"),
-            "quit_button": button.Button(375, "Quit")
+            "main_menu_2_button": button.Button(440, "Main Menu"),
+            "quit_button": button.Button(350, "Quit")
         }
 
     # initialize pygame
@@ -99,24 +99,25 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         pygame.draw.rect(self.window, button.fgColor, [button.x + 5, button.y + 5, button.w - 10, button.h - 10])    #Analogously, create the outer border of the button. This border is going to be in a darker color than the interior of the button.
         self.text(button.text, button.x + button.w / 2, button.y + button.h / 2, "Impact", 24, button.textColor, "center")    #Place the text inside the button using the text() method. The text will go at the specified location within the button, it will have the specified color, it will be centered within the button, and it will be presented in the Impact typeface, with a font size of 24.
 
-    def displayBoard(self, board, tile_w, tile_h, num_rows, num_cols):    #This method designs the way that the tiles of the gameboard look.
+    def displayBoard(self):    #This method designs the way that the tiles of the gameboard look.
         """
         - GUI display of the back end 2D array of the game board from the GameBoard class
         """
-        w = tile_w    #The width of the tile.
-        h = tile_h    #The height of the tile.
+        w = self.tile_w    #The width of the tile.
+        h = self.tile_h    #The height of the tile.
+        board = self.game_board.board
 
-        for row in range(num_rows):        #These two for loops look at every tile on the gameboard.
-            for col in range(num_cols):
+        for row in range(self.num_rows):        #These two for loops look at every tile on the gameboard.
+            for col in range(self.num_cols):
                 x = col * w + self.game_board_x    #This sets the x-coordinate of the gameboard. This is separate from determing where the player has to click in order to select a tile.
                 y = row * h + self.game_board_y     #This sets the y-coordinate of the gameboard. This is separate from determining where the player has to click in order to select a tile.
                 
                 if (board[row][col].isFlipped):
                     pygame.draw.rect(self.window, self.colors["grey_light"], [x, y, w, h])
                     if (board[row][col].isMine()): 
-                        self.text(board[row][col].value, x + (w / 2), y + h, "Impact", tile_w * 2, board[row][col].textColor(), "center")   #If the flipped tile is a mine, then center a red asterisk character twice the width of the tile, and of the Impact typeface, within the tile.
+                        self.text(board[row][col].value, x + (w / 2), y + h, "Impact", w * 2, board[row][col].textColor(), "center")   #If the flipped tile is a mine, then center a red asterisk character twice the width of the tile, and of the Impact typeface, within the tile.
                     else:
-                        self.text(board[row][col].value, x + (w / 2), y + (h / 2), "Impact", tile_w, board[row][col].textColor(), "center") #If the flipped tile is a not a mine, then center the character corresponding to its value, its width equalling the width of the tile, and of the Impact typeface, within the tile.
+                        self.text(board[row][col].value, x + (w / 2), y + (h / 2), "Impact", w, board[row][col].textColor(), "center") #If the flipped tile is a not a mine, then center the character corresponding to its value, its width equalling the width of the tile, and of the Impact typeface, within the tile.
                 else:
                     if (board[row][col].isFlagged):              #This if block creates the sprite of a flagged tile, putting the three differently colored parts at the specified coordinates.
                         pygame.draw.rect(self.window, self.colors["red_dark"], [x, y, w, h])
@@ -159,7 +160,33 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                 # change screen
                 if (self.buttons["play_game_button"].mouseOver(mouseX, mouseY) and event.button == 1):    #If the coordinates of the press of the mouse are inside of the geometric area of the Play Game button, then go to the Play Game screen.
                     self.screen = "play_game_screen"
-                    self.time_start = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
+                    self.firstTurn = True
+                    if (self.difficulty == "easy_difficulty"):    #The next four lines set the Easy states. There are 9 rows, 9 columns, 10 mines, and 10 mines remaining to be found (this number decreases if some mines are flagged).
+                        self.num_rows = 9
+                        self.num_cols = 9
+                        self.num_mines = 10
+                        self.mines_remaining = 10
+                    elif (self.difficulty == "medium_difficulty"):    #The next four lines set the Medium states. There are 12 rows, 12 columns, 24 mines, and 24 mines remaining to be found (this number decreases if some mines are flagged).
+                        self.num_rows = 12
+                        self.num_cols = 12
+                        self.num_mines = 24
+                        self.mines_remaining = 24
+                    elif (self.difficulty == "hard_difficulty"):    #The next four lines set the Hard states. There are 16 rows, 16 columns, 40 mines, and 40 mines remaining to be found (this number decreases if some mines are flagged).
+                        self.num_rows = 16
+                        self.num_cols = 16
+                        self.num_mines = 40
+                        self.mines_remaining = 40
+
+                    self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)    #The next block of code sets up the gameboard.
+                    self.game_board.createBoard()
+                    self.mines_remaining = self.num_mines
+                    self.game_board.placeMines()
+                    self.game_board.fillBoard()
+                    self.tile_w = self.game_board_w // self.num_cols
+                    self.tile_h = self.game_board_h // self.num_rows
+                    
+                    self.start_time = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
+                    
                 elif (self.buttons["help_button"].mouseOver(mouseX, mouseY) and event.button == 1):   #If the coordinates of the press of the mouse are inside of the geometric area of the Help button, then go to the Help screen.
                     self.screen = "help_screen"
                 elif (self.buttons["settings_button"].mouseOver(mouseX, mouseY) and event.button == 1):      #If the coordinates of the press of the mouse are inside of the geometric area of the Settings button, then go to the Settings screen.
@@ -179,23 +206,21 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         # update pygame frame
         pygame.display.update()    #This updates the Pygame frame.
 
-        self.time_current = time.time()    #This determines the current time.
-        self.time_seconds_elapsed = int(self.time_current - self.time_start)    #The total number of seconds that have elapsed since the player started the game.
-        #print(self.time_seconds_elapsed)
-        minutes, seconds = divmod(self.time_seconds_elapsed, 60)              #The next three lines convert the time from the total number of a seconds to a formatted time of the form "hours:minutes:seconds".
-        #print(minutes, seconds)
-        hours, minutes = divmod(minutes, 60)
-        self.time_formatted = ("%02d:%02d:%02d" % (hours, minutes, seconds))
+        current_time = time.time()    #This determines the current time.
+        self.score = int(current_time - self.start_time)    #The total number of seconds that have elapsed since the player started the game.
+
+        minutes, seconds = divmod(self.score, 60)              #The next lines convert the time from the total number of a seconds to a formatted time of the form "hours:minutes:seconds".
+        self.formatted_score = ("%2d:%02d" % (minutes, seconds))
 
         self.window.fill(self.colors["grey_dark"])    #This fills the screen with the color dark grey.
-        pygame.draw.rect(self.window, self.colors["grey_light"], [10, 25, 80, 50])                   #A light grey rectangle is displayed as a background for the text display of the number of mines in the game. It is located at the coordinates (60, 25), and has width 80 and height 50.
-        self.text(str(self.num_mines), 50, 48, "Impact", 50, self.colors["red_dark"], "center")     #The number of mines in the game is displayed at the coordinates (100, 48) in the Impact typeface, in font size 50, in the color dark red, aligned with the center.
-        pygame.draw.rect(self.window, self.colors["grey_light"], [300, 25, 80, 50])                  #A light grey rectangle is displayed as a background for the player's score. It is located at the coordinates (260, 25), and has width 80 and height 50.
-        self.text(str(self.time_formatted), 340, 48, "Impact", 20, self.colors["red_dark"], "center")         #The player's score is displayed at the coordinates (300, 48) in the Impact typeface, in font size 50, in the color dark red, aligned with the center.
+        pygame.draw.rect(self.window, self.colors["grey_light"], [25, 25, 100, 50])                   #A light grey rectangle is displayed as a background for the text display of the number of mines in the game. It is located at the coordinates (60, 25), and has width 80 and height 50.
+        self.text(str(self.mines_remaining), 75, 48, "Impact", 50, self.colors["red_dark"], "center")     #The number of mines in the game is displayed at the coordinates (100, 48) in the Impact typeface, in font size 50, in the color dark red, aligned with the center.
+        pygame.draw.rect(self.window, self.colors["grey_light"], [265, 25, 100, 50])                  #A light grey rectangle is displayed as a background for the player's score. It is located at the coordinates (260, 25), and has width 80 and height 50.
+        self.text(str(self.formatted_score), 310, 48, "Impact", 50, self.colors["red_dark"], "center")         #The player's score is displayed at the coordinates (300, 48) in the Impact typeface, in font size 50, in the color dark red, aligned with the center.
         self.displayButton(self.buttons["main_menu_2_button"])                                       #This displays a button leading back to the Main Menu screen.
 
         # GUI display of board
-        self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)        #This displays the board in the Play Game screen.
+        self.displayBoard()        #This displays the board in the Play Game screen.
 
         # event handling
         for event in pygame.event.get():                        #This for loop looks through the events received by Pygame.
@@ -231,8 +256,8 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                             self.game_board.clearEmptyTiles(input_row, input_col)
 
                         # if the user loses...
-                        if (self.game_board.hasLost(input_row, input_col)):            #If the player has selected a mine, then end the game and send the user to the Loss screen.
-                            self.screen = "loss_screen"
+                        if (self.game_board.hasLost(input_row, input_col)):            #If the player has selected a mine, then end the game and send the user to the Lose screen.
+                            self.screen = "lose_screen"
 
                         # if the user wins...
                         if (self.game_board.hasWon()):                                 #If the player has flipped every empty tile, then the player has won, so send the player to the Win screen.
@@ -250,14 +275,14 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                         # unmark the tile the user guessed as marked
                         self.game_board.board[input_row][input_col].unmark()           #Unmark a tile.
                     
-                        if (self.game_board.board[input_row][input_col].count % 3 == 1):      #count modulo 3 equals the number of right clicks past the default tile that the player has performed. One right click past the default tile makes for a flagged tile.
+                        if ((self.game_board.board[input_row][input_col].count % 3 == 1) and self.mines_remaining > 0):      #count modulo 3 equals the number of right clicks past the default tile that the player has performed. One right click past the default tile makes for a flagged tile.
                             # mark the tile the user guessed as a flag
                             self.game_board.board[input_row][input_col].flag()                #Flag the selected tile.
-                            self.num_mines -= 1                                               #Flagging a tile means that the tile has been identified as having a mine underneath it. Therefore, when one tile is flagged, decrease the number of tiles remaining to be found by 1. This number can go below 0 if too many tiles are flagged. If the number goes below 0, then the player knows that he has flagged too many tiles.
+                            self.mines_remaining -= 1                                         #Flagging a tile means that the tile has been identified as having a mine underneath it. Therefore, when one tile is flagged, decrease the number of tiles remaining to be found by 1. This number can go below 0 if too many tiles are flagged. If the number goes below 0, then the player knows that he has flagged too many tiles.
                         elif (self.game_board.board[input_row][input_col].count % 3 == 2):    #count modulo 3 equals the number of right clicks past the default tile that the player has performed. Two right clicks past the default tile makes for a marked tile.
                             # mark the tile the user guessed as marked
                             self.game_board.board[input_row][input_col].mark()                #Mark the selected tile. A tile must be flagged in order for the player to be able to mark it.
-                            self.num_mines += 1                                               #Increase the number of tiles remaining to be found by 1. This undoes the flagging's effect of decreasing the number of tiles remaining to be found by 1. Marking only means that the player does not know what is beneath the tile.
+                            self.mines_remaining += 1                                         #Increase the number of tiles remaining to be found by 1. This undoes the flagging's effect of decreasing the number of tiles remaining to be found by 1. Marking only means that the player does not know what is beneath the tile.
 
             # allow the user to exit the window
             if (event.type == pygame.QUIT):        #A restriction: out of all the events received, look also at requests for Pygame to quit its execution.
@@ -273,21 +298,21 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         self.text("Help", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")    #This places the title of the screen (Help) at the specified location, with the appropriate typeface (Impact), font size (48), color (white), and alignment (center).
 
         instructions = [                                                               #This is the text (intended as a set of instructions to the player) that is displayed on the Help screen. Each line is displayed on its own line.
-            "* To win, open all the cells that do not contain a mine.",
-            "* Try to win as quickly as possible.",
-            "* If you select a cell with a mine, you lose the game.",
-            "* Every non-mine cell, when flipped, will tell you the total number of mines",
-            "  in the eight neighboring cells.",
+            "* To win, flip all the tiles that do not contain a mine.",
+            "* If you select a tile with a mine, you lose the game.",
+            "* Every non-mine tile, when flipped, will tell you the",
+            "  total number of mines in the eight neighboring cells.",
             "* To select a tile, point at the tile and click on it.",
             "* To mark a tile that you think is a mine, point",
             "  and right-click. This colors the tile red.",
             "* Marking the mines is not necessary for winning the game.",
-            "* Right-click on a red tile to mark a tile that you are unsure about.",
-            "  This makes the tile green. To set the tile back to blue, right-click it."
+            "* Right-click a red tile to mark a tile that you are",
+            "  unsure about. This makes the tile green. To set the tile",
+            "  back to blue, right-click it.",
             "* The first tile you select is never a mine.",
-            "* The upper left corner contains the number of mines unmarked in the game.",
+            "* The upper left corner contains the number of unflagged mines.",
             "* The upper right corner contains a time counter.",
-            "* Good luck sweeping!"
+            "* Try to win as quickly as possible. Good luck sweeping!"
         ]
 
         for i in range(len(instructions)):
@@ -341,22 +366,10 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                 # change screen
                 if (self.buttons["easy_button"].mouseOver(mouseX, mouseY) and event.button == 1):                #If the coordinates of the press of the mouse are inside of the geometric area of the Easy button, then set the states of the game so that they are the Easy states.
                     self.difficulty = "easy_difficulty"
-                    self.num_rows = 9                                               #The next four lines set the Easy states. There are 9 rows, 9 columns, 10 mines, and 10 mines remaining to be found (this number decreases if some mines are flagged).
-                    self.num_cols = 9
-                    self.num_mines = 10
-                    self.mines_not_found_yet = 10
                 elif (self.buttons["medium_button"].mouseOver(mouseX, mouseY) and event.button == 1):            #If the coordinates of the press of the mouse are inside of the geometric area of the Medium button, then set the states of the game so that they are the Medium states.
                     self.difficulty = "medium_difficulty"
-                    self.num_rows = 12                                              #The next four lines set the Medium states. There are 12 rows, 12 columns, 24 mines, and 24 mines remaining to be found (this number decreases if some mines are flagged).
-                    self.num_cols = 12
-                    self.num_mines = 24
-                    self.mines_not_found_yet = 24
                 elif (self.buttons["hard_button"].mouseOver(mouseX, mouseY) and event.button == 1):              #If the coordinates of the press of the mouse are inside of the geometric area of the Hard button, then set the states of the game so that they are the Hard states.
                     self.difficulty = "hard_difficulty"
-                    self.num_rows = 16                                              #The next four lines set the Hard states. There are 16 rows, 16 columns, 40 mines, and 40 mines remaining to be found (this number decreases if some mines are flagged).
-                    self.num_cols = 16
-                    self.num_mines = 40
-                    self.mines_not_found_yet = 40
                 elif (self.buttons["main_menu_button"].mouseOver(mouseX, mouseY) and event.button == 1):     #If the coordinates of the press of the mouse are inside of the geometric area of the Main Menu button, then go back to the Main Menu screen.
                     self.screen = "main_menu_screen"
 
@@ -388,10 +401,12 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         self.text("High Scores", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")    #This places the title of the screen (High Scores) at the top of the screen, with the appropriate typeface (Impact), font size (48), color (white), and alignment (center).
         self.displayButton(self.buttons["main_menu_button"])    #This displays the Back button of the High Scores screen, which sends the player to the Main Menu screen.
 
-        for i in range(len(self.high_scores_list)):             #This places the text of the players' high scores at the specified location, with the appropriate typeface (Impact), font size (18), color (white), and alignment (left). The text of each high score includes the score, preceded by "[number of entry]) [player's name] - ".
-            self.text(str(i + 1) + ") " + self.high_scores_list[i][0] + " - " + self.high_scores_list[i][1], 35, i * 35 + 100, "Impact", 18, self.colors["white"], "left") 
+        hs = highscores.HighScores().outputData()
 
-        #self.displayButton(self.buttons["main_menu_button"])           #This displays the Back button of the Help screen, which sends the player to the Main Menu screen.
+        for i in range(len(hs)):             #This places the text of the players' high scores at the specified location, with the appropriate typeface (Impact), font size (18), color (white), and alignment (left). The text of each high score includes the score, preceded by "[number of entry]) [player's name] - ".
+            name, score = hs[i]
+            self.text(str(i + 1) + ") " + name, 100, i * 28 + 100, "Impact", 18, self.colors["white"], "left")
+            self.text(str(score), 265, i * 28 + 100, "Impact", 18, self.colors["white"], "left")
 
         # event handling
         for event in pygame.event.get():                        #This for loop looks through the events received by Pygame.
@@ -410,7 +425,7 @@ class GameGUI:      #This class describes the graphical user interface of the ga
             if (event.type == pygame.QUIT):    #A restriction: out of all the events received, look also at requests for Pygame to quit its execution.
                 self.openWindow = False        #If this event has been received, then close the program's open window.
 
-    def lossScreen(self):    #This method designs the Loss screen, which is displayed when the player loses the game.
+    def loseScreen(self):    #This method designs the Lose screen, which is displayed when the player loses the game.
 
         # update pygame frame
         pygame.display.update()    #Update the Pygame frame.
@@ -418,13 +433,13 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         # GUI display
         self.window.fill(self.colors["grey_light"])                #This fills the screen with the color light grey.
         self.game_board.revealMines()                         #This method, from, gameboard.py, flips every mine tile when the game has been lost, showing the red asterisks in place of the default blue square tiles.
-        self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)    #This displays the board exactly as it was when the player finished with it, and also with the mine tiles flipped. If this line were not here, then the entire board would no longer be displayed on the Loss screen.
+        self.displayBoard()    #This displays the board exactly as it was when the player finished with it, and also with the mine tiles flipped. If this line were not here, then the entire board would no longer be displayed on the Lose screen.
         self.text("Game Over!", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")        #This places text, indicating that the game has been lost, at the top of the screen, with the appropriate typeface (Impact), font size (48), color (white), and alignment (center).
         self.displayButton(self.buttons["play_again_button"])     #This displays the Play Again button, which allows the player to start a new game without having to go to the Main Menu screen.
         self.displayButton(self.buttons["main_menu_button"])      #This displays the Main Menu button, which sends the player to the Main Menu screen.
 
         pygame.draw.rect(self.window, self.colors["grey_dark"], [20, 115, 360, 50])    #A dark grey rectangle is displayed as a background for the player's final score. It is located at the coordinates (20, 115), and has width 360 and height 50.
-        self.text("Your time: " + str(self.time_formatted), 25, 125, "Impact", 25, self.colors["white"], "left")     #The player's final time is displayed at the coordinates (25, 125) in the Impact typeface, in font size 25, in the color white, aligned with the left.
+        self.text("Your time: " + str(self.formatted_score), 25, 125, "Impact", 25, self.colors["white"], "left")     #The player's final time is displayed at the coordinates (25, 125) in the Impact typeface, in font size 25, in the color white, aligned with the left.
 
         # event handling
         for event in pygame.event.get():                      #This for loop looks through the events received by Pygame.
@@ -439,7 +454,16 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                 if (self.buttons["play_again_button"].mouseOver(mouseX, mouseY) and event.button == 1):    #If the coordinates of the press of the mouse are inside of the geometric area of the Play Game button, then go back to the Play Game screen, and start a new game.
                     self.screen = "play_game_screen"
                     self.firstTurn = True      #Reset the firstTurn flag to true so that the computer understands that, the next time the player tries to play the game, it will be the player's first turn. Then, the computer will execute guaranteeEmptyTile() in gameboard.py.
-                    self.time_start = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
+                    self.start_time = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
+                    self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)    #The next block of code sets up the gameboard.
+                    self.game_board.createBoard()
+                    self.mines_remaining = self.num_mines
+                    self.game_board.placeMines()
+                    self.game_board.fillBoard()
+                    self.tile_w = self.game_board_w // self.num_cols
+                    self.tile_h = self.game_board_h // self.num_rows
+                    
+                    self.start_time = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
 
                 if (self.buttons["main_menu_button"].mouseOver(mouseX, mouseY) and event.button == 1):      #If the coordinates of the press of the mouse are inside of the geometric area of the Main Menu button, then go back to the Main Menu screen.
                     self.screen = "main_menu_screen"
@@ -449,21 +473,21 @@ class GameGUI:      #This class describes the graphical user interface of the ga
             if (event.type == pygame.QUIT):    #A restriction: out of all the events received, look also at requests for Pygame to quit its execution.
                 self.openWindow = False        #If this event has been received, then close the program's open window.
 
-    def winScreen(self):    #This method designs the Loss screen, which is displayed when the player loses the game.
+    def winScreen(self):    #This method designs the Lose screen, which is displayed when the player loses the game.
 
         # update pygame frame
         pygame.display.update()    #Update the Pygame frame.
 
         # GUI display
         self.window.fill(self.colors["grey_light"])                #This fills the screen with the color light grey.
-        self.displayBoard(self.game_board.board, self.tile_w, self.tile_h, self.num_rows, self.num_cols)    #This displays the board exactly as it was when the player finished with it. If this line were not here, then the entire board would no longer be displayed on the Win screen.
-        #font = pygame.font.SysFont("Impact", 48)              #This sets the typeface to Impact, and the font size to 48.
+        self.displayBoard()    #This displays the board exactly as it was when the player finished with it. If this line were not here, then the entire board would no longer be displayed on the Win screen.
+        
         self.text("You Win!", self.window_w / 2, 50, "Impact", 48, self.colors["white"], "center")          #This places text, indicating that the game has been won, at the top of the screen, with the appropriate typeface (Impact), font size (48), color (white), and alignment (center).
         self.displayButton(self.buttons["play_again_button"])     #This displays the Play Again button, which allows the player to start a new game without having to go to the Main Menu screen.
         self.displayButton(self.buttons["main_menu_button"])      #This displays the Main Menu button, which sends the player to the Main Menu screen.
 
         pygame.draw.rect(self.window, self.colors["grey_dark"], [20, 115, 360, 50])    #A dark grey rectangle is displayed as a background for the player's final score. It is located at the coordinates (20, 115), and has width 360 and height 50. The text for the player's final score comprises the formatted numerical value of the player's final score, preceded by the text "Your time: ".
-        self.text("Your time: " + str(self.time_formatted), 25, 125, "Impact", 25, self.colors["white"], "left")     #The player's final time is displayed at the coordinates (25, 125) in the Impact typeface, in font size 25, in the color white, aligned with the left.
+        self.text("Your time: " + str(self.formatted_score), 25, 125, "Impact", 25, self.colors["white"], "left")     #The player's final time is displayed at the coordinates (25, 125) in the Impact typeface, in font size 25, in the color white, aligned with the left.
 
         pygame.draw.rect(self.window, self.colors["grey_dark"], [20, 190, 360, 50])    #A dark grey rectangle is displayed as a background for the player's name (which is input by the player). It is located at the coordinates (20, 190), and has width 360 and height 50. The text for the player's final score comprises the formatted numerical value of the player's final score, preceded by the text "Your time: ".
         self.text("Enter your name: " + self.name, 25, 200, "Impact", 25, self.colors["white"], "left")    #The player's name (which is input by the player) is displayed at the coordinates (25, 200) in the Impact typeface, in font size 25, in the color white, aligned with the left. The text for the player's name comprises the player's name (previously input by the user), preceded by the text "Enter your name: ". By default, the player's name is player1, and this is displayed here in the game by default.
@@ -487,16 +511,36 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                 # change screen
 
                 if (self.buttons["play_again_button"].mouseOver(mouseX, mouseY) and event.button == 1):     #If the coordinates of the press of the mouse are inside of the geometric area of the Play Game button, then go back to the Play Game screen, and start a new game.
-                    self.high_scores_list.append((self.name, str(self.time_formatted)))        #Add the player's high score, from this instance of the player winning the game, to the list of players' high scores.
+                    highscores.HighScores().addData(self.name, self.score)                                  #Add the player's high score, from this instance of the player winning the game, to the list of players' high scores.
+                    self.screen = "play_game_screen"
+                    self.firstTurn = True                                                                   #Reset the firstTurn flag to true so that the computer understands that, the next time the player tries to play the game, it will be the player's first turn. Then, the computer will execute guaranteeEmptyTile() in gameboard.py.
+                    self.start_time = time.time()                                                           #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
+                    self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)    #The next block of code sets up the gameboard.
+                    self.game_board.createBoard()
+                    self.mines_remaining = self.num_mines
+                    self.game_board.placeMines()
+                    self.game_board.fillBoard()
+                    self.tile_w = self.game_board_w // self.num_cols
+                    self.tile_h = self.game_board_h // self.num_rows
+                    
+                    self.start_time = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
+
+                if (self.buttons["main_menu_button"].mouseOver(mouseX, mouseY) and event.button == 1):      #If the coordinates of the press of the mouse are inside of the geometric area of the Main Menu button, then go back to the Main Menu screen.
+                    highscores.HighScores().addData(self.name, self.score)                                  #Add the player's high score, from this instance of the player winning the game, to the list of players' high scores.
+                    self.screen = "main_menu_screen"
+                    self.firstTurn = True                                                                   #Reset the firstTurn flag to true so that the computer understands that, the next time the player tries to play the game, it will be the player's first turn. Then, the computer will execute guaranteeEmptyTile() in gameboard.py.
+
+                '''
+                    self.high_scores_list.append((self.name, str(self.formatted_score)))        #Add the player's high score, from this instance of the player winning the game, to the list of players' high scores.
                     self.screen = "play_game_screen"
                     self.firstTurn = True                 #Reset the firstTurn flag to true so that the computer understands that, the next time the player tries to play the game, it will be the player's first turn. Then, the computer will execute guaranteeEmptyTile() in gameboard.py.
                     self.time_start = time.time()                        #This is the time when the player goes to the Play Game screen. As soon as the player enters the Play Game screen, start the timer, to time how long the player takes to finish the game.
 
                 if (self.buttons["main_menu_button"].mouseOver(mouseX, mouseY) and event.button == 1):      #If the coordinates of the press of the mouse are inside of the geometric area of the Main Menu button, then go back to the Main Menu screen.
-                    self.high_scores_list.append((self.name, str(self.time_formatted)))        #Add the player's high score, from this instance of the player winning the game, to the list of players' high scores.
+                    self.high_scores_list.append((self.name, str(self.formatted_score)))        #Add the player's high score, from this instance of the player winning the game, to the list of players' high scores.
                     self.screen = "main_menu_screen"
                     self.firstTurn = True                 #Reset the firstTurn flag to true so that the computer understands that, the next time the player tries to play the game, it will be the player's first turn. Then, the computer will execute guaranteeEmptyTile() in gameboard.py.
-
+                '''
                 
 
             # allow the user to exit the window
@@ -508,7 +552,7 @@ class GameGUI:      #This class describes the graphical user interface of the ga
         - menu system and game loop
         """
         while (self.openWindow):    #While the window for the game is open.
-
+            '''
             if (self.firstTurn):    #When it is the player's first turn (i.e. before the player has started playing)create the gameboard with the prespecified numbers of rows, column, and mines. Place the mines in the board (under the mine tiles), and give to the empty tiles values denoting the numbers of adjacent mines.
                 self.game_board = gameboard.GameBoard(self.num_rows, self.num_cols, self.num_mines)    #Initialize the states of the gameboard, those states being the number of rows, the number of columns, and the number of mines. Construct the Gameboard object, known as the gameboard.
                 self.game_board.createBoard()                       #According to the previously specified number of rows to be used in the gameboard, add that number of empty elements to the previously initialized gameboard. Each element represents a row, so that the board is filled with rows. Into each row, add a column of empty tiles. Each tile is indexed by its row and column indices. This completes the array that is the gameboard, and fills the gameboard with empty tiles.
@@ -516,7 +560,7 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                 self.game_board.fillBoard()                         #To every empty tile in the gameboard, assign the value corresponding to the number of mines adjacent to it.
                 self.tile_w = self.game_board_w // self.num_cols    #The width of a single tile. The tile is a square. Its width equals the width of the board divided evenly by the number of columns. That is, the width of a tile equals the width of a row divided by the number of tiles per row.
                 self.tile_h = self.game_board_h // self.num_rows    #The height of a single tile. The tile is a square. Its height equals the height of the board divided evenly by the number of rows. That is, the height of a tile equals the height of a column divided by the number of tiles per column.
-
+            '''
             # main menu screen
             if (self.screen == "main_menu_screen"):        #If the player is supposed to be on the Main Menu screen, then construct the Main Menu screen.
                 self.mainMenuScreen()
@@ -538,14 +582,15 @@ class GameGUI:      #This class describes the graphical user interface of the ga
                 self.playGameScreen()
 
             # lose screen
-            elif (self.screen == "loss_screen"):           #If the player is supposed to be on the Loss screen, then construct the Loss screen.
-                self.lossScreen()
+            elif (self.screen == "lose_screen"):           #If the player is supposed to be on the Lose screen, then construct the Lose screen.
+                self.loseScreen()
 
             # win screen
             elif (self.screen == "win_screen"):            #If the player is supposed to be on the Win screen, then construct the Win screen.
                 self.winScreen()
 
-        pygame.quit()    #Uninitialize all Pygame modules that have been initialized. This does not end the program.
-        #quit()           #Quit the program.
+        pygame.quit()       #Uninitialize all Pygame modules that have been initialized. This does not end the program.
+        #quit()             #Quit the program.
         raise SystemExit    #Quit the program cleanly.
+
 
